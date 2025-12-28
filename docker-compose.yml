@@ -1,0 +1,82 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - XDEBUG_MODE=off
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - laravel
+
+  laravel-phpstorm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www
+    environment:
+      - APP_ENV=testing
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql-test
+      - DB_PORT=3306
+      - DB_DATABASE=testing
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - XDEBUG_MODE=coverage,debug
+      - XDEBUG_CONFIG=client_host=host.docker.internal
+      - PHP_IDE_CONFIG=serverName=laravel-phpstorm
+    depends_on:
+      mysql-test:
+        condition: service_healthy
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: laravel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-psecret"]
+      retries: 3
+      timeout: 5s
+
+  mysql-test:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: testing
+    tmpfs:
+      - /var/lib/mysql
+    networks:
+      - laravel
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-psecret"]
+      retries: 3
+      timeout: 5s
+
+networks:
+  laravel:
+
+volumes:
+  mysql_data:
