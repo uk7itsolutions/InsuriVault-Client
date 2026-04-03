@@ -11,8 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            '/login',
+            '/biometric/*',
+        ]);
         $middleware->alias([
             'api.auth' => \App\Http\Middleware\EnsureApiAuthenticated::class,
+            'install' => \App\Http\Middleware\RedirectIfInstalled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

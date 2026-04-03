@@ -4,9 +4,10 @@ This document provides a technical overview of the InsuriVault Client API, desig
 
 ## Base URL
 The API is typically hosted at `https://client-api.insuri-vault.com` or `http://localhost:5001` in development.
+The Swagger UI is available at `/swagger` for interactive testing and full schema documentation.
 
 ## Authentication
-Most endpoints require a JWT token in the `Authorization` header.
+Most endpoints require a JWT token in the `Authorization` header. This token can be obtained via traditional email/password login or via Biometric Authentication (WebAuthn).
 
 **Header Format:**
 ```http
@@ -45,7 +46,53 @@ Generates a JWT authentication token for a client.
 
 ---
 
-### 2. Account File Storage
+### 2. Biometric Authentication (WebAuthn)
+Allows for secure, passwordless authentication using biometrics.
+
+#### `POST /BiometricAuthentication/RegisterOptions`
+Initiates the registration of a new biometric credential. Requires Authentication (via traditional login).
+
+**Request Body:**
+- `originHost` (string, optional): The hostname of the requesting application.
+
+**Response:** Returns `CredentialCreateOptions` to be used with `navigator.credentials.create()`.
+
+#### `POST /BiometricAuthentication/CompleteRegistration`
+Finalizes the biometric registration. Requires Authentication.
+
+**Request Body:** `AuthenticatorAttestationRawResponse` (from the browser).
+**Query Parameters:**
+- `challenge` (string, required): The challenge from `RegisterOptions`.
+- `originHost` (string, optional): The hostname of the requesting application.
+
+#### `POST /BiometricAuthentication/AssertionOptions`
+Initiates biometric login.
+
+**Request Body:** `email` (string, required).
+**Query Parameters:**
+- `originHost` (string, optional): The hostname of the requesting application.
+
+**Response:** Returns `AssertionOptions` to be used with `navigator.credentials.get()`.
+
+#### `POST /BiometricAuthentication/CompleteAssertion`
+Finalizes biometric login and returns a JWT token.
+
+**Request Body:** `AuthenticatorAssertionRawResponse` (from the browser).
+**Query Parameters:**
+- `challenge` (string, required): The challenge from `AssertionOptions`.
+- `email` (string, required): The user's email.
+- `originHost` (string, optional): The hostname of the requesting application.
+
+**Example Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+---
+
+### 3. Account File Storage
 
 #### `POST /AccountFileStorage/List`
 Lists files available to the authenticated client, with optional filtering. Requires Authentication.
@@ -55,6 +102,7 @@ Lists files available to the authenticated client, with optional filtering. Requ
 - `fileCategory` (string, optional): Filter by category (e.g., "Statement", "Policy").
 - `year` (int, optional): Filter by year.
 - `month` (int, optional): Filter by month (1-12).
+- `originHost` (string, optional): The hostname of the requesting application. Used for database context resolution.
 
 **Example Request (All Files):**
 ```json
@@ -105,6 +153,7 @@ Downloads a specific file. Requires Authentication.
 - `downloadFormat` (string/int, optional): Format of the response.
     - `0` or `EncodedString` (Default): Returns the file content as a Base64 encoded string in the JSON response.
     - `1` or `BinaryFile`: Returns the file as a binary stream (octet-stream).
+- `originHost` (string, optional): The hostname of the requesting application. Used for database context resolution.
 
 **Example Request (Base64):**
 ```json
@@ -142,6 +191,7 @@ Returns a binary file stream with `Content-Type: application/octet-stream` and `
 ---
 
 ## Guidelines for AI Usage
-- **Context Resolution:** When calling `GetToken`, ensure `originHost` matches the expected client domain to ensure the correct database is accessed.
+- **Context Resolution:** When calling authentication or storage endpoints, ensure `originHost` matches the expected client domain to ensure the correct database is accessed.
+- **Biometric Flow:** Biometric authentication is a multi-step process involving `Options` generation and `Complete` verification. The browser's WebAuthn API must be used between these steps.
 - **Error Handling:** Handle `401 Unauthorized` by re-authenticating and `404 Not Found` when a file or account is missing.
 - **File Downloads:** For small files or browser-based integrations, `EncodedString` is often easier to handle. For large files or direct saving, use `BinaryFile`.
