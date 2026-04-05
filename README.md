@@ -14,6 +14,8 @@ A Laravel 12 web application for managing and viewing documents from the InsuriV
 
 ## Installation
 
+### Using Docker (Development)
+
 1. Clone the repository.
 2. Setup environment:
    ```bash
@@ -32,6 +34,14 @@ A Laravel 12 web application for managing and viewing documents from the InsuriV
    docker compose exec app php artisan key:generate
    docker compose exec app php artisan migrate
    ```
+
+### Server Installation (Plesk / cPanel / Shared Hosting)
+
+For production installation on shared hosting servers like Plesk or cPanel, follow the [Server Installation Guide](README_SERVER_INSTALL.md). 
+
+The application includes an **`upload`** folder that contains only the necessary production files (excluding Docker assets and tests). You can upload the contents of this folder directly to your server. 
+
+The application also includes a web-based **Installer Wizard** to help you configure the environment and database during the first visit.
 
 ## Running the Application
 
@@ -68,7 +78,7 @@ docker compose exec laravel-phpstorm php artisan test
 ```
 
 ### AI and Automation Guidelines
-**IMPORTANT:** Any AI agent (including Junie) or automated testing script **MUST** use the `laravel-phpstorm` container for testing. Do not use the `app` container for testing as it uses the local development database and environment.
+**IMPORTANT:** Any AI agent or automated testing script **MUST** use the `laravel-phpstorm` container for testing. Do not use the `app` container for testing as it uses the local development database and environment.
 
 ### Using PhpStorm
 The project is pre-configured for testing within PhpStorm using the `laravel-phpstorm` service. Use the remote interpreter configured for this container.
