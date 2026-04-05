@@ -17,10 +17,16 @@ class DocumentController extends Controller
 
     public function index()
     {
+        if (config('app.debug')) {
+            \Illuminate\Support\Facades\Log::debug('DocumentController index called');
+        }
         $token = Session::get('api_token');
         $accountsWithFiles = $this->apiService->listFiles($token);
 
         if ($accountsWithFiles === null) {
+            if (config('app.debug')) {
+                \Illuminate\Support\Facades\Log::debug('DocumentController index: listFiles failed, redirecting to logout');
+            }
             return redirect()->route('logout');
         }
 
@@ -29,9 +35,12 @@ class DocumentController extends Controller
 
     public function show($accountId, $fileId)
     {
+        if (config('app.debug')) {
+            \Illuminate\Support\Facades\Log::debug('DocumentController show called', ['accountId' => $accountId, 'fileId' => $fileId]);
+        }
         $token = Session::get('api_token');
-        // We use EncodedString to show it on the page
-        $base64Content = $this->apiService->downloadFile($token, $accountId, $fileId, 'EncodedString');
+        // We use EncodedString (0) to show it on the page
+        $base64Content = $this->apiService->downloadFile($token, $accountId, $fileId, 0);
 
         if ($base64Content === null) {
             abort(404, 'File not found or error downloading.');
@@ -56,8 +65,11 @@ class DocumentController extends Controller
 
     public function download($accountId, $fileId)
     {
+        if (config('app.debug')) {
+            \Illuminate\Support\Facades\Log::debug('DocumentController download called', ['accountId' => $accountId, 'fileId' => $fileId]);
+        }
         $token = Session::get('api_token');
-        $response = $this->apiService->downloadFile($token, $accountId, $fileId, 'BinaryFile');
+        $response = $this->apiService->downloadFile($token, $accountId, $fileId, 1);
 
         if ($response === null || !$response->successful()) {
             abort(404, 'File not found or error downloading.');

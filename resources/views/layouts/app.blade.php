@@ -11,6 +11,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         body { background-color: #f8f9fa; }
         .navbar { margin-bottom: 2rem; }
@@ -21,12 +22,17 @@
         <div class="container">
             <a class="navbar-brand" href="{{ route('documents.index') }}">InsuriVault</a>
             @if(Session::has('api_token'))
-                <div class="navbar-nav ms-auto align-items-center">
-                    <span class="nav-item nav-link text-light me-3 mb-0">{{ Session::get('user_email') }}</span>
-                    <button id="registerBiometricsBtn" class="btn btn-sm btn-outline-info me-3">
-                        Register Biometrics
-                    </button>
-                    <a class="nav-link" href="{{ route('logout') }}">Logout</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <div class="navbar-nav ms-auto align-items-center">
+                        <span class="nav-item nav-link text-light me-3 mb-0">{{ Session::get('user_email') }}</span>
+                        <button id="registerBiometricsBtn" class="btn btn-sm btn-outline-info me-lg-3 my-2 my-lg-0">
+                            Register Biometrics
+                        </button>
+                        <a class="nav-link" href="{{ route('logout') }}">Logout</a>
+                    </div>
                 </div>
             @endif
         </div>

@@ -37,8 +37,10 @@ return [
 
     'insurivault' => [
         'url' => env('INSURIVAULT_API_URL', 'http://localhost:5001'),
-        'origin_host' => env('INSURIVAULT_ORIGIN_HOST', 'client-portal.insuri-vault.com'),
+        'organization' => env('INSURIVAULT_ORGANIZATION', 'QA Organization'),
+        'origin_host' => env('INSURIVAULT_ORIGIN_HOST', null),
         'verify_ssl' => env('INSURIVAULT_VERIFY_SSL', true),
+        'timeout' => env('INSURIVAULT_API_TIMEOUT', 60),
     ],
 
 ];

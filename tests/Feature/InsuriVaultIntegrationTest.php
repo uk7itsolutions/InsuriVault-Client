@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -19,13 +20,13 @@ class InsuriVaultIntegrationTest extends TestCase
     public function test_login_page_is_accessible()
     {
         $response = $this->get('/login');
-
         $response->assertStatus(200);
         $response->assertSee('Login');
     }
 
     public function test_successful_login()
     {
+        $this->withoutMiddleware();
         Http::fake([
             "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(['token' => 'fake-jwt-token'], 200),
             "{$this->baseUrl}/AccountFileStorage/List" => Http::response([], 200),
@@ -43,6 +44,7 @@ class InsuriVaultIntegrationTest extends TestCase
 
     public function test_failed_login()
     {
+        $this->withoutMiddleware();
         Http::fake([
             "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(null, 401),
         ]);
@@ -64,7 +66,10 @@ class InsuriVaultIntegrationTest extends TestCase
                     'account' => [
                         'id' => 1,
                         'name' => 'John Doe',
-                        'email' => 'john.doe@example.com'
+                        'isActive' => true,
+                        'isDisabled' => false,
+                        'creationDate' => '2025-12-13T08:05:40',
+                        'updateDate' => '2026-04-05T04:09:55'
                     ],
                     'files' => [
                         [
@@ -81,7 +86,10 @@ class InsuriVaultIntegrationTest extends TestCase
             ], 200),
         ]);
 
-        $response = $this->withSession(['api_token' => 'fake-token'])
+        $response = $this->withSession([
+            'api_token' => 'fake-token',
+            'user_email' => 'john.doe@example.com'
+        ])
             ->get('/');
 
         $response->assertStatus(200);
@@ -101,7 +109,10 @@ class InsuriVaultIntegrationTest extends TestCase
                     'account' => [
                         'id' => $accountId,
                         'name' => 'John Doe',
-                        'email' => 'john.doe@example.com'
+                        'isActive' => true,
+                        'isDisabled' => false,
+                        'creationDate' => '2025-12-13T08:05:40',
+                        'updateDate' => '2026-04-05T04:09:55'
                     ],
                     'files' => [
                         [
@@ -150,7 +161,15 @@ class InsuriVaultIntegrationTest extends TestCase
     public function test_unauthenticated_user_cannot_access_documents()
     {
         $response = $this->get('/');
+        $response->assertRedirect('/login');
+    }
+
+    public function test_logout()
+    {
+        $response = $this->withSession(['api_token' => 'fake-token'])
+            ->get('/logout');
 
         $response->assertRedirect('/login');
+        $this->assertNull(session('api_token'));
     }
 }

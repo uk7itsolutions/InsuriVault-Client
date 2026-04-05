@@ -45,13 +45,33 @@ docker compose logs -f app
 ## Testing
 
 ### Using Docker Compose
-Run the full test suite:
+The primary environment for testing is the `laravel-phpstorm` container, which is configured with `APP_ENV=testing` and its own test database.
+
+Before running tests, check if the containers are online:
 ```bash
-docker compose run --rm app php artisan test
+docker compose ps
 ```
 
+If `insurivault-client-laravel-phpstorm-1` is not running, start it:
+```bash
+docker compose up -d laravel-phpstorm
+```
+
+Run the full test suite from the CLI:
+```bash
+docker compose exec laravel-phpstorm ./vendor/bin/phpunit
+```
+
+Alternatively, if you prefer using `artisan test`:
+```bash
+docker compose exec laravel-phpstorm php artisan test
+```
+
+### AI and Automation Guidelines
+**IMPORTANT:** Any AI agent (including Junie) or automated testing script **MUST** use the `laravel-phpstorm` container for testing. Do not use the `app` container for testing as it uses the local development database and environment.
+
 ### Using PhpStorm
-The project is pre-configured for testing within PhpStorm using the `laravel-phpstorm` service. See previous setup notes for details on configuring the remote interpreter.
+The project is pre-configured for testing within PhpStorm using the `laravel-phpstorm` service. Use the remote interpreter configured for this container.
 
 The tests cover:
 - Login (Success/Failure)

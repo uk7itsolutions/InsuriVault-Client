@@ -16,6 +16,14 @@ class EnsureApiAuthenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (config('app.debug')) {
+            \Illuminate\Support\Facades\Log::debug('EnsureApiAuthenticated middleware check', [
+                'has_token' => Session::has('api_token'),
+                'session_id' => Session::getId(),
+                'url' => $request->fullUrl(),
+            ]);
+        }
+
         if (!Session::has('api_token')) {
             return redirect()->route('login');
         }
