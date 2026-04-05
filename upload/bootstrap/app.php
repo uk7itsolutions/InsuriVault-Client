@@ -19,7 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'api.auth' => \App\Http\Middleware\EnsureApiAuthenticated::class,
-            'install' => \App\Http\Middleware\RedirectIfInstalled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

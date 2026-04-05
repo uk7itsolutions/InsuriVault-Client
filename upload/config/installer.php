@@ -107,7 +107,7 @@ return [
     'installed' => [
         'redirectOptions' => [
             'route' => [
-                'name' => 'welcome',
+                'name' => 'login',
                 'data' => [],
             ],
             'abort' => [
@@ -129,7 +129,7 @@ return [
     | route, abort, dump, 404, default, ''
     |
     */
-    'installedAlreadyAction' => '',
+    'installedAlreadyAction' => 'route',
 
     /*
     |--------------------------------------------------------------------------
