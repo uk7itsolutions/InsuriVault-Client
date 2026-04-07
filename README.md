@@ -4,6 +4,7 @@ A Laravel 12 web application for managing and viewing documents from the InsuriV
 
 ## Features
 - API-based Authentication
+- **WebAuthn Biometric Authentication** (fingerprint / face unlock on Android and other platforms)
 - Document Listing by Account
 - In-browser Document Viewing (PDF & Images)
 - Secure Document Downloading
@@ -96,3 +97,48 @@ The tests cover:
 3. **View**: Click "View" on any document to see it in the browser.
 4. **Download**: Click "Download" to save the file locally.
 5. **Security**: Try accessing `/` without logging in; you should be redirected to `/login`.
+
+---
+
+## WebAuthn Biometric Authentication
+
+The portal supports **WebAuthn** for passwordless, biometric login on devices that have a platform authenticator — including Android phones (fingerprint / face unlock) and desktops (Windows Hello, Touch ID, etc.).
+
+### Requirements
+
+- The application **must be served over HTTPS** (or `localhost`) — browsers block WebAuthn on plain HTTP.
+- The `INSURIVAULT_ORIGIN_HOST` environment variable must match the domain the browser sees (e.g. `portal.example.com`). The InsuriVault API uses this as the WebAuthn **Relying Party ID**.
+- The InsuriVault API backend must have WebAuthn (`BiometricAuthentication`) endpoints enabled.
+
+### How it works
+
+#### Registering biometrics (one-time setup per device)
+1. Log in with your email and password as normal.
+2. Click **Register Biometrics** in the top navigation bar.
+3. Your device will prompt you for your fingerprint, face, or PIN.
+4. On success, a passkey is stored on your device and linked to your account in the InsuriVault API.
+
+> The "Register Biometrics" button is hidden automatically when the browser or device does not support WebAuthn.
+
+#### Logging in with biometrics
+1. Navigate to `/login`.
+2. Enter your **email address** in the email field.
+3. Click **Login with Biometrics**.
+4. Approve the biometric prompt on your device.
+5. You are redirected to the dashboard — no password required.
+
+> The "Login with Biometrics" button is hidden when the device has no platform authenticator available (e.g. a desktop with no Windows Hello set up).
+
+### Android-specific notes
+- Use **Chrome for Android** (version 99+) or any browser that supports the WebAuthn API.
+- The site must be opened over **HTTPS** — Android Chrome blocks `navigator.credentials` on insecure origins.
+- After registering, the passkey is stored in your Google Password Manager (if enabled) and can be synced across Android devices signed into the same Google account.
+
+### Troubleshooting
+
+| Error | Likely cause |
+|-------|--------------|
+| "Biometric prompt was dismissed or timed out" | User cancelled or the 60-second timeout elapsed. Try again. |
+| "No registered biometric credentials found" | Biometrics have not been registered for this account/device. Log in with password and click **Register Biometrics**. |
+| "A security error occurred" | The site is not served over HTTPS. |
+| Button not visible | The browser/OS does not expose a platform authenticator (WebAuthn unavailable). |

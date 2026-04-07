@@ -1,0 +1,17 @@
+{
+  "name": "InsuriVault Client Portal",
+  "short_name": "InsuriVault",
+  "description": "Secure document management portal for InsuriVault clients.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#0d6efd",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
