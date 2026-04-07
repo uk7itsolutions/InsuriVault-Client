@@ -28,7 +28,13 @@ class InsuriVaultIntegrationTest extends TestCase
     {
         $this->withoutMiddleware();
         Http::fake([
-            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(['token' => 'fake-jwt-token'], 200),
+            "{$this->baseUrl}/UserAuthentication/GetToken" => function ($request) {
+                $this->assertEquals('test@example.com', $request['email']);
+                $this->assertEquals('password123', $request['password']);
+                $this->assertEquals('QA Organization', $request['organization']);
+                $this->assertEquals('localhost:8000', $request['originHost']);
+                return Http::response(['token' => 'fake-jwt-token'], 200);
+            },
             "{$this->baseUrl}/AccountFileStorage/List" => Http::response([], 200),
         ]);
 

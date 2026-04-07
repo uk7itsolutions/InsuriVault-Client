@@ -135,11 +135,12 @@ Initiates WebAuthn/FIDO2 biometric credential registration. Returns challenge op
 
 **Auth required:** Yes (JWT)
 
-**Request body:**
-```json
-"https://app.acmecorp.com"
-```
-A plain JSON string representing the origin host. Optional (can be `null`).
+**Query parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `originHost` | string | No | Origin host for tenant resolution |
+| `organization` | string | No | Organization name for tenant resolution |
 
 **Success response (200):** Returns a FIDO2 `CredentialCreateOptions` object containing the challenge, relying party info, user info, and supported algorithms. Pass this to the WebAuthn browser API (`navigator.credentials.create()`).
 
@@ -164,6 +165,7 @@ Completes biometric credential registration after the client device has created 
 |-----------|------|----------|-------------|
 | `challenge` | string | Yes | The challenge string from the `RegisterOptions` response |
 | `originHost` | string | No | Origin host for tenant resolution |
+| `organization` | string | No | Organization name for tenant resolution |
 
 **Success response (200):** Returns the FIDO2 registration result with credential ID and public key info.
 
@@ -190,6 +192,7 @@ A plain JSON string with the client's email address.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `originHost` | string | No | Origin host for tenant resolution |
+| `organization` | string | No | Organization name for tenant resolution |
 
 **Success response (200):** Returns a FIDO2 `AssertionOptions` object. Pass this to the WebAuthn browser API (`navigator.credentials.get()`).
 
@@ -214,6 +217,7 @@ Completes biometric login and returns a JWT token.
 | `challenge` | string | Yes | The challenge string from the `AssertionOptions` response |
 | `email` | string | Yes | Client email address |
 | `originHost` | string | No | Origin host for tenant resolution |
+| `organization` | string | No | Organization name for tenant resolution |
 
 **Success response (200):**
 ```json
@@ -240,6 +244,7 @@ Removes a registered biometric credential.
 |-----------|------|----------|-------------|
 | `credentialId` | string | Yes | Base64URL-encoded credential ID to delete |
 | `originHost` | string | No | Origin host for tenant resolution |
+| `organization` | string | No | Organization name for tenant resolution |
 
 **Success response (200):** Empty body.
 
@@ -348,15 +353,15 @@ Step 1: Authenticate
     Response: { "token": "eyJ..." }
 
 Step 2 (optional): Register biometric credential
-    POST /BiometricAuthentication/RegisterOptions         [Bearer token]
+    POST /BiometricAuthentication/RegisterOptions?organization=...         [Bearer token]
     → pass result to navigator.credentials.create()
-    POST /BiometricAuthentication/CompleteRegistration     [Bearer token]
+    POST /BiometricAuthentication/CompleteRegistration?challenge=...&organization=...     [Bearer token]
 
 Step 3 (alternative login): Biometric login
-    POST /BiometricAuthentication/AssertionOptions
+    POST /BiometricAuthentication/AssertionOptions?organization=...
     Body: "user@example.com"
     → pass result to navigator.credentials.get()
-    POST /BiometricAuthentication/CompleteAssertion
+    POST /BiometricAuthentication/CompleteAssertion?challenge=...&email=...&organization=...
     Response: { "token": "eyJ..." }
 
 Step 4: List files

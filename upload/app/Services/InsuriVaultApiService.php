@@ -17,7 +17,7 @@ class InsuriVaultApiService
     {
         $this->baseUrl = config('services.insurivault.url');
         $this->organization = config('services.insurivault.organization');
-        $this->originHost = config('services.insurivault.origin_host');
+        $this->originHost = config('services.insurivault.origin_host') ?: request()->getHttpHost();
         $this->verifySsl = config('services.insurivault.verify_ssl');
         $this->timeout = config('services.insurivault.timeout');
     }
@@ -53,7 +53,6 @@ class InsuriVaultApiService
             'body' => $response->body(),
             'email' => $email,
             'organization' => $this->organization,
-            'originHost' => $this->originHost,
         ]);
 
         return null;
@@ -65,7 +64,10 @@ class InsuriVaultApiService
             Log::debug('InsuriVault API getRegisterOptions called');
         }
         $response = $this->http()->withToken($token)
-            ->withBody(json_encode($this->originHost), 'application/json')
+            ->withQueryParameters([
+                'organization' => $this->organization,
+                'originHost' => $this->originHost,
+            ])
             ->post("{$this->baseUrl}/BiometricAuthentication/RegisterOptions");
 
         if ($response->successful()) {
@@ -78,7 +80,6 @@ class InsuriVaultApiService
         Log::error('InsuriVault API RegisterOptions Failed', [
             'status' => $response->status(),
             'body' => $response->body(),
-            'originHost' => $this->originHost,
         ]);
 
         return null;
@@ -92,6 +93,7 @@ class InsuriVaultApiService
         $response = $this->http()->withToken($token)
             ->withQueryParameters([
                 'challenge' => $challenge,
+                'organization' => $this->organization,
                 'originHost' => $this->originHost,
             ])
             ->post("{$this->baseUrl}/BiometricAuthentication/CompleteRegistration", $attestationRawResponse);
@@ -117,7 +119,9 @@ class InsuriVaultApiService
         if (config('app.debug')) {
             Log::debug('InsuriVault API getAssertionOptions called', ['email' => $email]);
         }
-        $response = $this->http()->withQueryParameters([
+        $response = $this->http()
+            ->withQueryParameters([
+                'organization' => $this->organization,
                 'originHost' => $this->originHost,
             ])
             ->withBody(json_encode($email), 'application/json')
@@ -147,6 +151,7 @@ class InsuriVaultApiService
         $response = $this->http()->withQueryParameters([
                 'challenge' => $challenge,
                 'email' => $email,
+                'organization' => $this->organization,
                 'originHost' => $this->originHost,
             ])
             ->post("{$this->baseUrl}/BiometricAuthentication/CompleteAssertion", $assertionRawResponse);
