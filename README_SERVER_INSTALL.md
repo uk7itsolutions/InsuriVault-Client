@@ -8,6 +8,7 @@ This guide provides step-by-step instructions for installing the InsuriVault Cli
 - MySQL / MariaDB database (Recommended for sessions/cache, but can be configured to use file-based storage)
 - Apache (with mod_rewrite) or Nginx
 - Composer (optional, if you have SSH access)
+- A valid TLS certificate — **required for biometric login only** (see below). The rest of the portal works over plain HTTP.
 
 ### Why is a database needed?
 While the InsuriVault Client Portal is API-based for its primary business logic, Laravel uses a database to store:
@@ -16,6 +17,17 @@ While the InsuriVault Client Portal is API-based for its primary business logic,
 - **Jobs**: To handle background tasks if needed.
 
 By default, this application is configured to use the `database` driver for sessions and cache to ensure stability and performance in production environments.
+
+### Why HTTPS is required for biometric login
+
+Biometric (WebAuthn) login only works over HTTPS. Browsers expose the WebAuthn API exclusively in a **secure context** — a valid TLS certificate, or `localhost` for local development. On a plain-HTTP deployment `window.PublicKeyCredential` is undefined, and biometric login cannot work at all. A self-signed or expired certificate counts as insecure and fails the same way.
+
+Two further points follow from how WebAuthn binds credentials to a domain:
+
+- **Serve the portal from the hostname registered as your master account hostname.** A WebAuthn credential is bound to the *relying party ID*, which InsuriVault derives from that registered hostname. If you serve the portal from a different domain, the browser refuses the credential before the request reaches the API. Changing the hostname you serve from later means clients must enrol their biometrics again.
+- **Credentials do not move between deployments.** A biometric credential enrolled on one portal cannot be used on another, by design — that binding is what makes WebAuthn resistant to phishing, and it is what keeps one deployment's clients out of another's.
+
+Everything else in the portal works over plain HTTP. Only biometric login has this requirement.
 
 ---
 
@@ -132,6 +144,11 @@ Once the installation is complete, the application will be ready to use. Navigat
     - **Fix (Generic)**: Contact your hosting provider and ask them to whitelist the specific rule ID for your domain.
 - **Database Connection Failed**: Double-check your database credentials in the Environment settings step of the wizard.
 - **Missing API Settings**: If you need to change your API settings later, you can edit the `.env` file in the project root.
+- **No "Login with Biometrics" button on the login page**: This is almost always the HTTPS requirement, not a fault.
+    - **Cause**: Browsers expose the WebAuthn API only in a secure context. Over plain HTTP, `window.PublicKeyCredential` is undefined, so the login page's feature detection stops immediately. Note that **nothing at all is shown** in this case — not even the "Biometric login not available on this device" note, which only appears when the browser supports WebAuthn but the device has no usable authenticator. An empty space where the button should be therefore points at the connection, not the device.
+    - **Fix**: Install a valid TLS certificate for the domain and serve the portal over `https://`. In Plesk, use **SSL/TLS Certificates → Install a free basic certificate provided by Let's Encrypt**, then enable **Permanent SEO-safe 301 redirect from HTTP to HTTPS** in Hosting Settings. A self-signed or expired certificate is not enough — the browser treats it as insecure and the API stays hidden.
+    - **Verify**: Open the browser console on the login page and enter `window.PublicKeyCredential`. `undefined` confirms the secure-context problem; anything else means WebAuthn is available and the cause is elsewhere.
+    - **Also check**: The portal must be served from the hostname registered as your master account hostname. If the certificate is valid and the button appears but authentication fails, confirm that hostname matches — see "Why HTTPS is required for biometric login" above.
 
 ---
 
