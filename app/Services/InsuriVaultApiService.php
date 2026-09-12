@@ -28,6 +28,23 @@ class InsuriVaultApiService
             ->when(!$this->verifySsl, fn ($r) => $r->withoutVerifying());
     }
 
+    /**
+     * Restores an empty clientExtensionResults to a JSON object. PHP cannot tell an empty JSON
+     * object from an empty JSON array — json_decode renders both as [] and json_encode writes that
+     * back as [] — so the browser's {} becomes [] simply by passing through this portal. The API
+     * binds the field into a map and refuses an array, failing the request before its action runs.
+     * Only the empty case is ambiguous: a populated map decodes to an associative array and encodes
+     * back as an object on its own.
+     */
+    private function withClientExtensionResultsAsObject(array $payload): array
+    {
+        if (($payload['clientExtensionResults'] ?? null) === []) {
+            $payload['clientExtensionResults'] = new \stdClass();
+        }
+
+        return $payload;
+    }
+
     public function getToken($email, $password)
     {
         if (config('app.debug')) {
@@ -96,7 +113,7 @@ class InsuriVaultApiService
                 'organization' => $this->organization,
                 'originHost' => $this->originHost,
             ])
-            ->post("{$this->baseUrl}/BiometricAuthentication/CompleteRegistration", $attestationRawResponse);
+            ->post("{$this->baseUrl}/BiometricAuthentication/CompleteRegistration", $this->withClientExtensionResultsAsObject($attestationRawResponse));
 
         if ($response->successful()) {
             if (config('app.debug')) {
@@ -154,7 +171,7 @@ class InsuriVaultApiService
                 'organization' => $this->organization,
                 'originHost' => $this->originHost,
             ])
-            ->post("{$this->baseUrl}/BiometricAuthentication/CompleteAssertion", $assertionRawResponse);
+            ->post("{$this->baseUrl}/BiometricAuthentication/CompleteAssertion", $this->withClientExtensionResultsAsObject($assertionRawResponse));
 
         if ($response->successful()) {
             if (config('app.debug')) {
