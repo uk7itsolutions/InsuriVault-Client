@@ -23,6 +23,8 @@ A Laravel 12 web application for managing and viewing documents from the InsuriV
    cp .env.example .env
    ```
    Ensure you have the correct API settings in `.env`.
+   - **`INSURIVAULT_API_URL`**: Point this to `https://client-api-dev.insuri-vault.com` for testing/development, and `https://client-api.insuri-vault.com` for production.
+   - **`INSURIVAULT_ORGANIZATION`**: Should match your client's organization name. You can use `"Demo Organization"` when pointing to the development/test API.
 3. Build and start the containers:
    ```bash
    docker compose up -d --build
