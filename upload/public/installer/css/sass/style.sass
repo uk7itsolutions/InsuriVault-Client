@@ -1,5 +1,5 @@
 // Variables
-@import "variables";
+@import "variables"
 
 //@extend-elements
 //original selectors
@@ -19,9 +19,8 @@
 	margin: 0
 
 
-@import $url_0;
+@import url($url_0)
 html
-	font-family: $font_1
 	-ms-text-size-adjust: 100%
 	-webkit-text-size-adjust: 100%
 	font-family: $font_3, $font_4, $font_5, $font_6, $font_1
@@ -42,7 +41,6 @@ body
 	text-rendering: optimizeLegibility
 	-webkit-font-smoothing: antialiased
 	-moz-osx-font-smoothing: grayscale
-	-moz-font-feature-settings: "liga" on
 
 article
 	display: block
@@ -145,13 +143,10 @@ dfn
 	padding: 0
 
 h1
-	font-size: 2em
-	margin: .67em 0
 	font-size: 27.85438995234061px
 	margin-top: .942400822452556em
 	line-height: 1.130880986943067em
 	margin-bottom: .188480164490511em
-	margin: 0
 	padding: 0
 	font-family: $font_3, $font_4, $font_5, $font_6, $font_1
 	font-weight: 500
@@ -194,11 +189,8 @@ hr
 
 pre
 	overflow: auto
-	padding: .875em
-	margin-bottom: 1.75em
 	font-family: $font_2
 	font-size: 1em
-	margin: 0
 	padding: 0
 	margin-bottom: 1.75em
 	code
@@ -206,11 +198,9 @@ pre
 
 
 code
-	font-family: $font_2
+	font-family: $font_7, $font_8, $font_9, $font_10, $font_2
 	font-size: 1em
 	margin: 0
-	padding: 0
-	font-family: $font_7, $font_8, $font_9, $font_10, $font_2
 	padding: .0875em .2625em
 	line-height: 0
 
@@ -231,7 +221,6 @@ button
 	overflow: visible
 	text-transform: none
 	-webkit-appearance: button
-	cursor: pointer
 	display: block
 	cursor: pointer
 	font-size: 12px
@@ -265,7 +254,6 @@ input[type=reset]
 
 input[type=submit]
 	-webkit-appearance: button
-	cursor: pointer
 	display: block
 	cursor: pointer
 	font-size: 12px
@@ -312,13 +300,7 @@ input[type=search]::-webkit-search-decoration
 
 fieldset
 	border: 1px solid $color_2
-	margin: 0 2px
-	padding: .35em .625em .75em
-	padding: .875em 1.75em 1.75em
-	border-width: 1px
-	border-style: solid
 	max-width: 100%
-	margin-bottom: 1.8375em
 	margin: 0
 	padding: 0
 	button
@@ -330,7 +312,6 @@ fieldset
 
 legend
 	border: 0
-	padding: 0
 	color: $color_4
 	font-weight: 700
 	margin: 0
@@ -340,21 +321,16 @@ table
 	width: 100%
 	border-spacing: 0
 	border-collapse: collapse
-	margin-bottom: 2.1875em
-	margin: 0
 	padding: 0
+	margin: 0
 	margin-bottom: 1.75em
 
 td
-	padding: 0
 	margin: 0
-	padding: 0
 	padding: .21875em .875em
 
 th
-	padding: 0
 	margin: 0
-	padding: 0
 	text-align: left
 	color: $color_4
 	padding: .21875em .875em
@@ -366,48 +342,48 @@ th
 	font-weight: 400
 	font-style: normal
 
-@media(min-width:600px)
+@media (min-width: 600px)
 	html
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	h1
-		font-size: calc(27.85438995234061px +18.56959 *((100vw - 600px) / 540))
+		font-size: calc(27.85438995234061px + 18.56959 * ((100vw - 600px) / 540))
 
 	h2
-		font-size: calc(23.53700340860508px +15.69134 *((100vw - 600px) / 540))
+		font-size: calc(23.53700340860508px + 15.69134 * ((100vw - 600px) / 540))
 
 	h3
-		font-size: calc(19.888804974891777px +13.2592 *((100vw - 600px) / 540))
+		font-size: calc(19.888804974891777px + 13.2592 * ((100vw - 600px) / 540))
 
 	h4
-		font-size: calc(16.806071548796314px +11.20405 *((100vw - 600px) / 540))
+		font-size: calc(16.806071548796314px + 11.20405 * ((100vw - 600px) / 540))
 
 	h5
-		font-size: calc(14.201156945318074px +9.46744 *((100vw - 600px) / 540))
+		font-size: calc(14.201156945318074px + 9.46744 * ((100vw - 600px) / 540))
 
 	h6
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	input[type=email]
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	input[type=password]
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	input[type=text]
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	textarea
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	button
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 	input[type=submit]
-		font-size: calc(12px +8 *((100vw - 600px) / 540))
+		font-size: calc(12px + 8 * ((100vw - 600px) / 540))
 
 
-@media(min-width:1140px)
+@media (min-width: 1140px)
 	html
 		font-size: 20px
 
@@ -719,13 +695,10 @@ input[type=text]
 	background-position: top
 	min-height: 100vh
 	display: -webkit-flex
-	display: -ms-flexbox
 	display: flex
 	-webkit-justify-content: center
-	-ms-flex-pack: center
 	justify-content: center
 	-webkit-align-items: center
-	-ms-flex-align: center
 	align-items: center
 
 .box
@@ -774,16 +747,12 @@ input[type=text]
 	list-style: none
 	margin-bottom: 0
 	display: -webkit-flex
-	display: -ms-flexbox
 	display: flex
 	-webkit-flex-direction: row-reverse
-	-ms-flex-direction: row-reverse
 	flex-direction: row-reverse
 	-webkit-justify-content: center
-	-ms-flex-pack: center
 	justify-content: center
 	-webkit-align-items: center
-	-ms-flex-align: center
 	align-items: center
 	margin-top: -20px
 
@@ -798,12 +767,10 @@ input[type=text]
 	height: 3px
 	&:first-child
 		-webkit-flex: 1 0 auto
-		-ms-flex: 1 0 auto
 		flex: 1 0 auto
 
 	&:last-child
 		-webkit-flex: 1 0 auto
-		-ms-flex: 1 0 auto
 		flex: 1 0 auto
 
 
@@ -813,13 +780,10 @@ input[type=text]
 	width: 40px
 	height: 40px
 	display: -webkit-flex
-	display: -ms-flexbox
 	display: flex
 	-webkit-justify-content: center
-	-ms-flex-pack: center
 	justify-content: center
 	-webkit-align-items: center
-	-ms-flex-align: center
 	align-items: center
 	//If you use compass, instead of the line below you could use + border-radius($radius, $vertical-radius)
 	border-radius: 50%
@@ -895,7 +859,6 @@ input[type=text]
 .list
 	padding-left: 0
 	list-style: none
-	margin-bottom: 0
 	margin: 20px 0 35px
 	border: 1px solid $color_13
 	//If you use compass, instead of the line below you could use + border-radius($radius, $vertical-radius)
@@ -914,7 +877,6 @@ input[type=text]
 
 	&:before
 		display: -webkit-flex
-		display: -ms-flexbox
 		display: flex
 		-webkit-justify-content: center
 		-ms-flex-pack: center
@@ -945,7 +907,6 @@ input[type=text]
 
 	span
 		display: -webkit-flex
-		display: -ms-flexbox
 		display: flex
 		-webkit-justify-content: center
 		-ms-flex-pack: center

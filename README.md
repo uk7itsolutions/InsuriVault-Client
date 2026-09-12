@@ -42,6 +42,15 @@ For production installation on shared hosting servers like Plesk or cPanel, foll
 
 The application includes an **`upload`** folder that contains only the necessary production files (excluding Docker assets and tests). You can upload the contents of this folder directly to your server. 
 
+Every file tracked under `upload/` is a copy of one at the repository root, so **a change to a shared file has to be made in both places**. That has been missed twice — the biometric rewrite and a round of installer CSS fixes both landed at the root only, and operators downloading the distributable got neither. Run the sync before opening a PR that touches anything shared:
+
+```bash
+php tools/sync-distributable.php           # copy the root's version over the distributable
+php tools/sync-distributable.php --check   # report drift without changing anything
+```
+
+The `--check` form runs in CI on every pull request. It compares content rather than bytes, because the two trees disagree on line endings.
+
 The application also includes a web-based **Installer Wizard** to help you configure the environment and database during the first visit.
 
 ## Running the Application
