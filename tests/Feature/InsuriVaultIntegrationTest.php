@@ -14,6 +14,16 @@ class InsuriVaultIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Pinned for the same reason as in BiometricAuthTest: these reach the API as query
+        // parameters, the tests assert on them, and inheriting them from the developer's .env made
+        // the result depend on the machine rather than on the code.
+        config([
+            'services.insurivault.url' => 'https://api.test',
+            'services.insurivault.organization' => 'QA Organization',
+            'services.insurivault.origin_host' => 'portal.test',
+        ]);
+
         $this->baseUrl = config('services.insurivault.url');
     }
 
@@ -32,7 +42,7 @@ class InsuriVaultIntegrationTest extends TestCase
                 $this->assertEquals('test@example.com', $request['email']);
                 $this->assertEquals('password123', $request['password']);
                 $this->assertEquals('QA Organization', $request['organization']);
-                $this->assertEquals('localhost:8000', $request['originHost']);
+                $this->assertEquals('portal.test', $request['originHost']);
                 return Http::response(['token' => 'fake-jwt-token'], 200);
             },
             "{$this->baseUrl}/AccountFileStorage/List" => Http::response([], 200),

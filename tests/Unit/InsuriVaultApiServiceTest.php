@@ -118,4 +118,53 @@ class InsuriVaultApiServiceTest extends TestCase
             return !str_contains($request->body(), 'clientExtensionResults');
         });
     }
+
+    // originHost tells the API which deployment the request speaks for, and it is how the API
+    // resolves the tenant. Configuring it lets a portal running somewhere else — a local copy under
+    // test, say — claim the hostname a master account is registered under. Nothing covered that,
+    // which is how the feature tests came to depend on the fallback without saying so.
+    public function test_configured_origin_host_is_sent_verbatim()
+    {
+        config(['services.insurivault.origin_host' => 'demo.insuri-vault.com']);
+
+        Http::fake(['*UserAuthentication/GetToken*' => Http::response(['token' => 'jwt'], 200)]);
+
+        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+
+        Http::assertSent(function ($request) {
+            return json_decode($request->body(), true)['originHost'] === 'demo.insuri-vault.com';
+        });
+    }
+
+    // Left empty, the service falls back to the host of the request being served, so an
+    // unconfigured portal speaks for whatever hostname it is reached on.
+    public function test_origin_host_falls_back_to_the_request_host_when_not_configured()
+    {
+        config(['services.insurivault.origin_host' => null]);
+
+        Http::fake(['*UserAuthentication/GetToken*' => Http::response(['token' => 'jwt'], 200)]);
+
+        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+
+        $requestHost = request()->getHttpHost();
+
+        Http::assertSent(function ($request) use ($requestHost) {
+            return json_decode($request->body(), true)['originHost'] === $requestHost;
+        });
+    }
+
+    // The organisation is the other half of how the API resolves a tenant, and it is configuration
+    // the tests previously read rather than set.
+    public function test_configured_organization_is_sent()
+    {
+        config(['services.insurivault.organization' => 'Some Other Organization']);
+
+        Http::fake(['*UserAuthentication/GetToken*' => Http::response(['token' => 'jwt'], 200)]);
+
+        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+
+        Http::assertSent(function ($request) {
+            return json_decode($request->body(), true)['organization'] === 'Some Other Organization';
+        });
+    }
 }
