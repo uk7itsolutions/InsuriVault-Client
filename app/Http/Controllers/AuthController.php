@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AuthenticationServiceException;
 use App\Services\InsuriVaultApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
+    private const CREDENTIALS_REJECTED_MESSAGE = 'The provided credentials do not match our records.';
+
+    private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is unavailable: the portal could not complete the request with the document service. This is not a password problem — the reason has been written to the application log (storage/logs/laravel.log).';
+
     protected $apiService;
 
     public function __construct(InsuriVaultApiService $apiService)
@@ -36,7 +41,21 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $token = $this->apiService->getToken($credentials['email'], $credentials['password']);
+        try {
+            $token = $this->apiService->getToken($credentials['email'], $credentials['password']);
+        } catch (AuthenticationServiceException $exception) {
+            if (config('app.debug')) {
+                \Illuminate\Support\Facades\Log::debug('AuthController login failed, the service refused the portal');
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => self::SERVICE_UNAVAILABLE_MESSAGE], 503);
+            }
+
+            return back()->withErrors([
+                'email' => self::SERVICE_UNAVAILABLE_MESSAGE,
+            ]);
+        }
 
         if ($token) {
             if (config('app.debug')) {
@@ -63,11 +82,11 @@ class AuthController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['error' => 'The provided credentials do not match our records.'], 401);
+            return response()->json(['error' => self::CREDENTIALS_REJECTED_MESSAGE], 401);
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => self::CREDENTIALS_REJECTED_MESSAGE,
         ]);
     }
 

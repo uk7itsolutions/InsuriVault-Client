@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Exceptions\AuthenticationServiceException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class InsuriVaultApiService
 {
+    private const CALLER_NOT_ADMITTED_MESSAGE = 'Service not active for this caller.';
+
     protected $baseUrl;
     protected $organization;
     protected $originHost;
@@ -45,17 +49,39 @@ class InsuriVaultApiService
         return $payload;
     }
 
+    /**
+     * Returns the token, or null when the API refused the credentials — something the person
+     * signing in can correct themselves. Every other failure throws instead: the portal's address
+     * is not allowlisted for its organization, the organization does not resolve, the API faulted,
+     * or it could not be reached. None of those depend on the email address, which is what makes
+     * reporting them separately safe.
+     */
     public function getToken($email, $password)
     {
         if (config('app.debug')) {
             Log::debug('InsuriVault API getToken called', ['email' => $email]);
         }
-        $response = $this->http()->post("{$this->baseUrl}/UserAuthentication/GetToken", [
-            'email' => $email,
-            'password' => $password,
-            'organization' => $this->organization,
-            'originHost' => $this->originHost,
-        ]);
+
+        $url = "{$this->baseUrl}/UserAuthentication/GetToken";
+
+        try {
+            $response = $this->http()->post($url, [
+                'email' => $email,
+                'password' => $password,
+                'organization' => $this->organization,
+                'originHost' => $this->originHost,
+            ]);
+        } catch (ConnectionException $exception) {
+            Log::error('InsuriVault API Login Failed', [
+                'url' => $url,
+                'status' => null,
+                'body' => $exception->getMessage(),
+                'email' => $email,
+                'organization' => $this->organization,
+            ]);
+
+            throw new AuthenticationServiceException($exception->getMessage(), 0, $exception);
+        }
 
         if ($response->successful()) {
             if (config('app.debug')) {
@@ -65,14 +91,36 @@ class InsuriVaultApiService
         }
 
         Log::error('InsuriVault API Login Failed', [
-            'url' => "{$this->baseUrl}/UserAuthentication/GetToken",
+            'url' => $url,
             'status' => $response->status(),
             'body' => $response->body(),
             'email' => $email,
             'organization' => $this->organization,
         ]);
 
+        if ($this->refusedThePortalRatherThanTheCredentials($response)) {
+            throw new AuthenticationServiceException($response->body());
+        }
+
         return null;
+    }
+
+    /**
+     * Separates a failure the portal's operator has to fix from one the person signing in can.
+     * Only outcomes the API reaches before it reads the email address qualify: the allowlist
+     * refusal, an unresolvable organization, and any server fault. Every other 401 is left to read
+     * as a credential refusal — the API's "user not found" and "user not allowed" bodies are on
+     * their way to becoming byte-identical to a wrong password, so matching those would both break
+     * and disclose which addresses have accounts.
+     */
+    private function refusedThePortalRatherThanTheCredentials($response)
+    {
+        if ($response->serverError() || $response->status() === 400) {
+            return true;
+        }
+
+        return $response->status() === 401
+            && str_contains($response->body(), self::CALLER_NOT_ADMITTED_MESSAGE);
     }
 
     public function getRegisterOptions($token)

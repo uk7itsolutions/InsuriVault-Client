@@ -70,8 +70,51 @@ class InsuriVaultIntegrationTest extends TestCase
             'password' => 'wrong-password',
         ]);
 
-        $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
         $this->assertNull(session('api_token'));
+    }
+
+    // The bug this pins down: a portal whose address was not allowlisted was told its password was
+    // wrong. The refusal happens before the API reads the email, so the password was never checked
+    // and was in fact correct. The message has to send the operator to the log instead, and must
+    // not quote what the API said — the login page is unauthenticated.
+    public function test_a_portal_the_api_refuses_is_not_told_its_password_is_wrong()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Service not active for this caller.', 401),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $message = session('errors')->first('email');
+        $this->assertStringContainsString('storage/logs/laravel.log', $message);
+        $this->assertStringNotContainsString('credentials do not match', $message);
+        $this->assertStringNotContainsString('Service not active', $message);
+        $this->assertNull(session('api_token'));
+    }
+
+    // The login page posts as JSON for the biometric enrolment flow and renders body.error in a
+    // toast, so that path carries the message too and needs the same distinction.
+    public function test_the_json_login_path_reports_a_refused_portal_as_unavailable()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Service not active for this caller.', 401),
+        ]);
+
+        $response = $this->postJson('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $response->assertStatus(503);
+        $this->assertStringContainsString('storage/logs/laravel.log', $response->json('error'));
+        $this->assertStringNotContainsString('credentials do not match', $response->json('error'));
     }
 
     public function test_document_listing()
