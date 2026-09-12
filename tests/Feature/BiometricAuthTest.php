@@ -13,6 +13,18 @@ class BiometricAuthTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // InsuriVaultApiService reads these in its constructor and the tests below assert on what it
+        // sends, so the suite reported on the developer's .env until they were pinned here. The
+        // origin host mattered most: left empty it falls back to the request host, which made the
+        // assertions depend on APP_URL as well and fail for anyone whose portal names a real
+        // deployment. The fallback itself is covered deliberately in InsuriVaultApiServiceTest.
+        config([
+            'services.insurivault.url' => 'https://api.test',
+            'services.insurivault.organization' => 'QA Organization',
+            'services.insurivault.origin_host' => 'portal.test',
+        ]);
+
         $this->baseUrl = config('services.insurivault.url');
     }
 
@@ -23,7 +35,7 @@ class BiometricAuthTest extends TestCase
                 $url = parse_url($request->url());
                 parse_str($url['query'] ?? '', $query);
                 $this->assertEquals('QA Organization', $query['organization'] ?? null);
-                $this->assertEquals('localhost:8000', $query['originHost'] ?? null);
+                $this->assertEquals('portal.test', $query['originHost'] ?? null);
                 $this->assertEquals(json_encode('test@example.com'), $request->body());
                 return Http::response([
                     'challenge' => 'fake-challenge',
@@ -56,7 +68,7 @@ class BiometricAuthTest extends TestCase
                 $this->assertEquals('fake-challenge', $query['challenge'] ?? null);
                 $this->assertEquals('test@example.com', $query['email'] ?? null);
                 $this->assertEquals('QA Organization', $query['organization'] ?? null);
-                $this->assertEquals('localhost:8000', $query['originHost'] ?? null);
+                $this->assertEquals('portal.test', $query['originHost'] ?? null);
                 return Http::response([
                     'token' => 'biometric-jwt-token'
                 ], 200);
@@ -83,7 +95,7 @@ class BiometricAuthTest extends TestCase
                 $url = parse_url($request->url());
                 parse_str($url['query'] ?? '', $query);
                 $this->assertEquals('QA Organization', $query['organization'] ?? null);
-                $this->assertEquals('localhost:8000', $query['originHost'] ?? null);
+                $this->assertEquals('portal.test', $query['originHost'] ?? null);
                 return Http::response([
                     'challenge' => 'reg-challenge',
                     'user' => ['id' => 'user-id']
@@ -112,7 +124,7 @@ class BiometricAuthTest extends TestCase
                 parse_str($url['query'] ?? '', $query);
                 $this->assertEquals('reg-challenge', $query['challenge'] ?? null);
                 $this->assertEquals('QA Organization', $query['organization'] ?? null);
-                $this->assertEquals('localhost:8000', $query['originHost'] ?? null);
+                $this->assertEquals('portal.test', $query['originHost'] ?? null);
                 return Http::response(null, 200);
             },
         ]);
