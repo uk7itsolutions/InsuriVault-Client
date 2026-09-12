@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 const DISTRIBUTABLE_DIRECTORY = 'upload';
 
-/**
- * Every file tracked under upload/ is a copy of one at the repository root. The distributable
- * decides which files ship; the root decides what is in them. Nothing here chooses between the two,
- * so a file the distributable does not carry is simply not its business.
- */
-function trackedDistributablePaths(string $repositoryRoot): array
+function trackedPaths(string $repositoryRoot, string $pathspec): array
 {
-    $command = sprintf('git -C %s ls-files %s', escapeshellarg($repositoryRoot), escapeshellarg(DISTRIBUTABLE_DIRECTORY));
+    $command = sprintf('git -C %s ls-files %s', escapeshellarg($repositoryRoot), escapeshellarg($pathspec));
     exec($command, $output, $exitCode);
 
     if ($exitCode !== 0) {
-        fwrite(STDERR, "Could not list the tracked files under " . DISTRIBUTABLE_DIRECTORY . "/.\n");
+        fwrite(STDERR, sprintf("Could not list the tracked files under %s.\n", $pathspec));
         exit(2);
     }
 
@@ -24,8 +19,7 @@ function trackedDistributablePaths(string $repositoryRoot): array
 
 /**
  * Compares content rather than bytes: the two trees have drifted apart on line endings, and a
- * comparison that counted those would report all 130 files on every run and be ignored within a
- * week.
+ * comparison that counted those would report every shared file on every run and be ignored.
  */
 function hasSameContent(string $firstPath, string $secondPath): bool
 {
@@ -35,68 +29,80 @@ function hasSameContent(string $firstPath, string $secondPath): bool
     return $first === $second;
 }
 
-function findDivergentPaths(string $repositoryRoot, array $distributablePaths): array
+/**
+ * Splits the distributable into the files this tool can speak for and the files it cannot. Only a
+ * path under version control in both trees is comparable — the distributable also carries built
+ * assets that are gitignored at the root, and copying a working-tree file over one of those would
+ * publish whatever happened to be on the machine that ran this.
+ */
+function inspectDistributable(string $repositoryRoot): array
 {
+    $rootTrackedPaths = array_flip(trackedPaths($repositoryRoot, ':(exclude)' . DISTRIBUTABLE_DIRECTORY));
+
     $divergent = [];
+    $uncomparable = [];
 
-    foreach ($distributablePaths as $distributablePath) {
+    foreach (trackedPaths($repositoryRoot, DISTRIBUTABLE_DIRECTORY) as $distributablePath) {
         $sourcePath = substr($distributablePath, strlen(DISTRIBUTABLE_DIRECTORY) + 1);
-        $absoluteSource = $repositoryRoot . '/' . $sourcePath;
-        $absoluteDistributable = $repositoryRoot . '/' . $distributablePath;
 
-        if (!is_file($absoluteSource)) {
-            $divergent[] = ['source' => $sourcePath, 'distributable' => $distributablePath, 'reason' => 'no counterpart at the repository root'];
+        if (!isset($rootTrackedPaths[$sourcePath])) {
+            $uncomparable[] = $sourcePath;
             continue;
         }
 
-        if (!hasSameContent($absoluteSource, $absoluteDistributable)) {
-            $divergent[] = ['source' => $sourcePath, 'distributable' => $distributablePath, 'reason' => 'content differs'];
+        if (!hasSameContent($repositoryRoot . '/' . $sourcePath, $repositoryRoot . '/' . $distributablePath)) {
+            $divergent[] = $sourcePath;
         }
     }
 
-    return $divergent;
+    return ['divergent' => $divergent, 'uncomparable' => $uncomparable];
 }
 
-function reportCheck(array $divergent): int
+function describeUncomparable(array $uncomparable): void
 {
-    if ($divergent === []) {
-        echo "The distributable matches the source tree.\n";
+    if ($uncomparable === []) {
+        return;
+    }
+
+    echo sprintf("\n%d file(s) in %s/ are not tracked at the repository root and were not compared:\n", count($uncomparable), DISTRIBUTABLE_DIRECTORY);
+    foreach ($uncomparable as $sourcePath) {
+        echo sprintf("  %s\n", $sourcePath);
+    }
+    echo "\nBuilt assets belong here — the distributable ships them so operators need no build step.\nKeeping them current is a release concern, not something copying a file can settle.\n";
+}
+
+function reportCheck(array $inspection): int
+{
+    if ($inspection['divergent'] === []) {
+        echo "Every shared file in " . DISTRIBUTABLE_DIRECTORY . "/ matches the source tree.\n";
+        describeUncomparable($inspection['uncomparable']);
         return 0;
     }
 
-    fwrite(STDERR, sprintf("%d file(s) in %s/ have drifted from the source tree:\n\n", count($divergent), DISTRIBUTABLE_DIRECTORY));
-    foreach ($divergent as $entry) {
-        fwrite(STDERR, sprintf("  %s — %s\n", $entry['source'], $entry['reason']));
+    fwrite(STDERR, sprintf("%d file(s) in %s/ have drifted from the source tree:\n\n", count($inspection['divergent']), DISTRIBUTABLE_DIRECTORY));
+    foreach ($inspection['divergent'] as $sourcePath) {
+        fwrite(STDERR, sprintf("  %s\n", $sourcePath));
     }
     fwrite(STDERR, "\nRun: php tools/sync-distributable.php\n");
 
     return 1;
 }
 
-function copyOverDistributable(string $repositoryRoot, array $divergent): int
+function copyOverDistributable(string $repositoryRoot, array $inspection): int
 {
-    $copied = 0;
-
-    foreach ($divergent as $entry) {
-        $absoluteSource = $repositoryRoot . '/' . $entry['source'];
-
-        if (!is_file($absoluteSource)) {
-            fwrite(STDERR, sprintf("Skipped %s — %s. Remove it from the distributable, or restore it at the root.\n", $entry['distributable'], $entry['reason']));
-            continue;
-        }
-
-        copy($absoluteSource, $repositoryRoot . '/' . $entry['distributable']);
-        echo sprintf("Updated %s\n", $entry['distributable']);
-        $copied++;
+    foreach ($inspection['divergent'] as $sourcePath) {
+        copy($repositoryRoot . '/' . $sourcePath, $repositoryRoot . '/' . DISTRIBUTABLE_DIRECTORY . '/' . $sourcePath);
+        echo sprintf("Updated %s/%s\n", DISTRIBUTABLE_DIRECTORY, $sourcePath);
     }
 
-    echo sprintf("\n%d file(s) copied into %s/.\n", $copied, DISTRIBUTABLE_DIRECTORY);
+    echo sprintf("\n%d file(s) copied into %s/.\n", count($inspection['divergent']), DISTRIBUTABLE_DIRECTORY);
+    describeUncomparable($inspection['uncomparable']);
 
-    return $copied === count($divergent) ? 0 : 1;
+    return 0;
 }
 
 $repositoryRoot = dirname(__DIR__);
 $isCheckOnly = in_array('--check', array_slice($argv, 1), true);
-$divergent = findDivergentPaths($repositoryRoot, trackedDistributablePaths($repositoryRoot));
+$inspection = inspectDistributable($repositoryRoot);
 
-exit($isCheckOnly ? reportCheck($divergent) : copyOverDistributable($repositoryRoot, $divergent));
+exit($isCheckOnly ? reportCheck($inspection) : copyOverDistributable($repositoryRoot, $inspection));
