@@ -24,7 +24,6 @@
 
 @import url($url_0);
 html {
-	font-family: $font_0;
 	-ms-text-size-adjust: 100%;
 	-webkit-text-size-adjust: 100%;
 	font-family: $font_2, $font_3, $font_4, $font_5, $font_0;
@@ -45,7 +44,6 @@ body {
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	-moz-font-feature-settings: "liga" on;
 }
 article {
 	display: block;
@@ -149,17 +147,16 @@ dfn {
 	padding: 0;
 }
 h1 {
-	font-size: 2em;
-	margin: .67em 0;
-	margin-top: .942400822452556em;
-	line-height: 1.130880986943067em;
-	margin-bottom: .188480164490511em;
-	margin: 0;
-	padding: 0;
 	font-family: $font_2, $font_3, $font_4, $font_5, $font_0;
 	font-weight: 500;
 	color: $color_4;
 	clear: both;
+	font-size: 2em;
+	margin: 0;
+	padding: 0;
+	margin-top: .942400822452556em;
+	line-height: 1.130880986943067em;
+	margin-bottom: .188480164490511em;
 }
 mark {
 	background: $color_0;
@@ -200,14 +197,11 @@ hr {
 }
 pre {
 	overflow: auto;
-	padding: .875em;
-	margin-bottom: 1.75em;
 	background: $color_18;
 	line-height: 1;
 	color: $color_30;
 	//Instead of the line below you could use @include border-radius($radius, $vertical-radius)
 	border-radius: 3px;
-	font-size: 10px;
 	font-family: $font_1;
 	font-size: 1em;
 	margin: 0;
@@ -218,11 +212,9 @@ pre {
 	}
 }
 code {
-	font-family: $font_1;
+	font-family: $font_6, $font_7, $font_8, $font_9, $font_1;
 	font-size: 1em;
 	margin: 0;
-	padding: 0;
-	font-family: $font_6, $font_7, $font_8, $font_9, $font_1;
 	padding: .0875em .2625em;
 	line-height: 0;
 }
@@ -243,7 +235,6 @@ button {
 	overflow: visible;
 	text-transform: none;
 	-webkit-appearance: button;
-	cursor: pointer;
 	display: block;
 	cursor: pointer;
 	font-size: 12px;
@@ -269,7 +260,6 @@ select {
 	//Instead of the line below you could use @include border-radius($radius, $vertical-radius)
 	border-radius: 3px;
 	padding: 10px 12px;
-	width: calc(100% - 24px);
 	margin: 0 auto 1em;
 	width: 100%;
 	height: 35px;
@@ -279,9 +269,7 @@ textarea {
 	overflow: auto;
 	display: block;
 	max-width: 100%;
-	padding: .4375em;
 	font-size: 12px;
-	margin-bottom: 1.18125em;
 	outline: none;
 	border: 1px solid $color_27;
 	//Instead of the line below you could use @include border-radius($radius, $vertical-radius)
@@ -296,7 +284,6 @@ input[type=reset] {
 }
 input[type=submit] {
 	-webkit-appearance: button;
-	cursor: pointer;
 	display: block;
 	cursor: pointer;
 	font-size: 12px;
@@ -343,13 +330,7 @@ input[type=search]::-webkit-search-decoration {
 }
 fieldset {
 	border: 1px solid $color_2;
-	margin: 0 2px;
-	padding: .35em .625em .75em;
-	padding: .875em 1.75em 1.75em;
-	border-width: 1px;
-	border-style: solid;
 	max-width: 100%;
-	margin-bottom: 1.8375em;
 	margin: 0;
 	padding: 0;
 	button {
@@ -361,7 +342,6 @@ fieldset {
 }
 legend {
 	border: 0;
-	padding: 0;
 	color: $color_4;
 	font-weight: 700;
 	margin: 0;
@@ -371,21 +351,16 @@ table {
 	width: 100%;
 	border-spacing: 0;
 	border-collapse: collapse;
-	margin-bottom: 2.1875em;
 	margin: 0;
 	padding: 0;
 	margin-bottom: 1.75em;
 }
 td {
-	padding: 0;
 	margin: 0;
-	padding: 0;
 	padding: .21875em .875em;
 }
 th {
-	padding: 0;
 	margin: 0;
-	padding: 0;
 	text-align: left;
 	color: $color_4;
 	padding: .21875em .875em;
@@ -395,22 +370,22 @@ th {
 		font-size: 12px;
 	}
 	h1 {
-		font-size: calc(27.85438995234061px +18.56959 *((100vw - 600px) / 540));
+		font-size: calc(27.85438995234061px + 18.56959 *((100vw - 600px) / 540));
 	}
 	h2 {
-		font-size: calc(23.53700340860508px +15.69134 *((100vw - 600px) / 540));
+		font-size: calc(23.53700340860508px + 15.69134 *((100vw - 600px) / 540));
 	}
 	h3 {
-		font-size: calc(19.888804974891777px +13.2592 *((100vw - 600px) / 540));
+		font-size: calc(19.888804974891777px + 13.2592 *((100vw - 600px) / 540));
 	}
 	h4 {
-		font-size: calc(16.806071548796314px +11.20405 *((100vw - 600px) / 540));
+		font-size: calc(16.806071548796314px + 11.20405 *((100vw - 600px) / 540));
 	}
 	h5 {
-		font-size: calc(14.201156945318074px +9.46744 *((100vw - 600px) / 540));
+		font-size: calc(14.201156945318074px + 9.46744 *((100vw - 600px) / 540));
 	}
 	h6 {
-		font-size: calc(12px +8 *((100vw - 600px) / 540));
+		font-size: calc(12px + 8 *((100vw - 600px) / 540));
 	}
 }
 abbr {
@@ -572,10 +547,8 @@ ol {
 	padding-left: 1.4em;
 }
 p {
-	margin: 0;
-	padding: 0;
-	margin-bottom: 1.75em;
 	margin: 0 0 1rem 0;
+	padding: 0;
 }
 q {
 	margin: 0;
@@ -724,7 +697,6 @@ input[type=text] {
 	background-position: top;
 	min-height: 100vh;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
 	-webkit-justify-content: center;
 	-ms-flex-pack: center;
@@ -781,10 +753,9 @@ input[type=text] {
 	list-style: none;
 	margin-bottom: 0;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
 	-webkit-flex-direction: row-reverse;
-	-ms-flex-direction: row-reverse;
+	//-ms-flex-direction: row-reverse;
 	flex-direction: row-reverse;
 	-webkit-justify-content: center;
 	-ms-flex-pack: center;
@@ -805,12 +776,10 @@ input[type=text] {
 	height: 3px;
 	&:first-child {
 		-webkit-flex: 1 0 auto;
-		-ms-flex: 1 0 auto;
 		flex: 1 0 auto;
 	}
 	&:last-child {
 		-webkit-flex: 1 0 auto;
-		-ms-flex: 1 0 auto;
 		flex: 1 0 auto;
 	}
 }
@@ -820,7 +789,6 @@ input[type=text] {
 	width: 40px;
 	height: 40px;
 	display: -webkit-flex;
-	display: -ms-flexbox;
 	display: flex;
 	-webkit-justify-content: center;
 	-ms-flex-pack: center;
@@ -906,7 +874,6 @@ input[type=text] {
 .list {
 	padding-left: 0;
 	list-style: none;
-	margin-bottom: 0;
 	margin: 20px 0 35px;
 	border: 1px solid $color_14;
 	//Instead of the line below you could use @include border-radius($radius, $vertical-radius)
@@ -944,7 +911,6 @@ input[type=text] {
 	}
 	.fa.row-icon:before {
 		display: -webkit-flex;
-		display: -ms-flexbox;
 		display: flex;
 		-webkit-justify-content: center;
 		-ms-flex-pack: center;
@@ -971,7 +937,6 @@ input[type=text] {
 	}
 	span {
 		display: -webkit-flex;
-		display: -ms-flexbox;
 		display: flex;
 		-webkit-justify-content: center;
 		-ms-flex-pack: center;
@@ -1090,8 +1055,6 @@ input[type='number'] {
 		padding: 1em;
 		text-align: center;
 		-webkit-transition: all 0.1s ease-in-out;
-		-moz-transition: all 0.1s ease-in-out;
-		-o-transition: all 0.1s ease-in-out;
 		//Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
 		transition: all 0.1s ease-in-out;
 		&:hover {
@@ -1129,8 +1092,6 @@ input[type='number'] {
 			color: $color_10;
 			padding-top: 5px;
 			-webkit-transition: all 0.1s ease-in-out;
-			-moz-transition: all 0.1s ease-in-out;
-			-o-transition: all 0.1s ease-in-out;
 			//Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
 			transition: all 0.1s ease-in-out;
 			&:hover {
@@ -1147,8 +1108,6 @@ input[type='number'] {
 				height: 200px;
 				overflow-y: auto;
 				-webkit-transition: all 0.3s ease-in-out;
-				-moz-transition: all 0.3s ease-in-out;
-				-o-transition: all 0.3s ease-in-out;
 				//Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
 				transition: all 0.3s ease-in-out;
 			}
@@ -1256,8 +1215,6 @@ input[type='number'] {
 		background-color: transparent;
 		cursor: pointer;
 		-webkit-transition: all 0.1s ease-in-out;
-		-moz-transition: all 0.1s ease-in-out;
-		-o-transition: all 0.1s ease-in-out;
 		//Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
 		transition: all 0.1s ease-in-out;
 		&:hover {
@@ -1274,8 +1231,6 @@ svg:not(:root) {
 .step__item.active~.step__item .step__icon {
     background-color: $color_12;
     -webkit-transition: all 0.1s ease-in-out;
-    -moz-transition: all 0.1s ease-in-out;
-    -o-transition: all 0.1s ease-in-out;
     transition: all 0.1s ease-in-out;
 }
 .step__item.active .step__icon:hover,
