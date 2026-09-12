@@ -47,11 +47,23 @@ class AuthController extends Controller
             Session::put('api_token', $token);
             Session::put('user_email', $credentials['email']);
             Session::save(); // Explicitly save the session before redirecting
+
+            // The login page posts here as JSON when the biometric button is pressed with a
+            // password filled, so it can run the registration ceremony next instead of following a
+            // redirect. Reusing this route keeps the surface that accepts a password to one.
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true]);
+            }
+
             return redirect()->route('documents.index');
         }
 
         if (config('app.debug')) {
             \Illuminate\Support\Facades\Log::debug('AuthController login failed, no token');
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['error' => 'The provided credentials do not match our records.'], 401);
         }
 
         return back()->withErrors([
