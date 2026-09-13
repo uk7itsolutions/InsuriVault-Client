@@ -15,7 +15,7 @@
 </head>
 <body class="bg-[#f8f9fa]">
     <nav class="mb-8 bg-slate-900">
-        <div class="mx-auto w-full max-w-[1320px] px-[0.75rem] lg:flex lg:h-16 lg:items-center lg:justify-between">
+        <div class="container lg:flex lg:h-16 lg:items-center lg:justify-between">
             <div class="flex h-16 items-center justify-between lg:h-auto">
                 <a class="text-xl font-semibold text-slate-50 no-underline" href="{{ route('documents.index') }}">InsuriVault</a>
                 @if(Session::has('api_token'))
