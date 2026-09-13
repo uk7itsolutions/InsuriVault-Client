@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  distributable:
+    name: Build and attach the portal archive
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the archive
+        run: git archive --format=zip --prefix=insurivault-client-portal/ -o insurivault-client-portal-${{ github.ref_name }}.zip ${{ github.ref_name }}
+
+      - name: Fail if the built assets are missing
+        run: |
+          unzip -l insurivault-client-portal-${{ github.ref_name }}.zip \
+            | grep -q 'insurivault-client-portal/public/build/manifest.json' \
+            || { echo "The archive carries no build manifest; operators cannot build one themselves."; exit 1; }
+
+      - name: Attach it to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: insurivault-client-portal-${{ github.ref_name }}.zip

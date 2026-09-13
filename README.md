@@ -43,16 +43,16 @@ A Laravel 12 web application for managing and viewing documents from the InsuriV
 
 For production installation on shared hosting servers like Plesk or cPanel, follow the [Server Installation Guide](README_SERVER_INSTALL.md). 
 
-The application includes an **`upload`** folder that contains only the necessary production files (excluding Docker assets and tests). You can upload the contents of this folder directly to your server. 
+**The repository root is what deploys.** There is one tree: the files you develop against are the files a server runs. `public/build` is committed, so a checkout carries the built stylesheet and script and a server needs no Node toolchain to produce them.
 
-Every file tracked under `upload/` is a copy of one at the repository root, so **a change to a shared file has to be made in both places**. That has been missed twice — the biometric rewrite and a round of installer CSS fixes both landed at the root only, and operators downloading the distributable got neither. Run the sync before opening a PR that touches anything shared:
+This replaces the `upload/` folder that earlier versions carried. That folder was a second copy of every shared file, and keeping the two in step was manual — it was missed twice, on the biometric rewrite and on a round of installer CSS fixes, and on both occasions operators got neither change. A copy that has to be remembered is a copy that eventually is not.
 
-```bash
-php tools/sync-distributable.php           # copy the root's version over the distributable
-php tools/sync-distributable.php --check   # report drift without changing anything
-```
+Operators install from one of two places, and both are the same tree:
 
-The `--check` form runs in CI on every pull request. It compares content rather than bytes, because the two trees disagree on line endings.
+- **A release archive** — attached to each tagged release, built at release time by `git archive` and named `insurivault-client-portal-<tag>.zip`. It omits development-only files through the `export-ignore` rules in `.gitattributes`: `tests/`, `docker/`, `docker-compose.yml`, `phpunit.xml`, `vite.config.js` and `.github/`.
+- **A `git pull`** on the server, which is how `demo.insuri-vault.com` is deployed. This brings those development-only files with it. None is reachable over the web — the document root is `public/` — so their presence is untidiness rather than exposure.
+
+The lean download is therefore still available, but it is now produced when a release is cut rather than stored as a second tree under version control. That is the distinction worth keeping: a generated artefact cannot drift from its source, and a committed copy always can.
 
 The application also includes a web-based **Installer Wizard** to help you configure the environment and database during the first visit.
 
