@@ -12,27 +12,31 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        body { background-color: #f8f9fa; }
-        .navbar { margin-bottom: 2rem; }
-    </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('documents.index') }}">InsuriVault</a>
+<body class="bg-[#f8f9fa]">
+    <nav class="mb-8 bg-slate-900">
+        <div class="mx-auto w-full max-w-[1320px] px-[0.75rem] lg:flex lg:h-16 lg:items-center lg:justify-between">
+            <div class="flex h-16 items-center justify-between lg:h-auto">
+                <a class="text-xl font-semibold text-slate-50 no-underline" href="{{ route('documents.index') }}">InsuriVault</a>
+                @if(Session::has('api_token'))
+                    <button id="navbarToggle" type="button"
+                            class="inline-flex items-center justify-center rounded-md border-[1px] border-slate-600 p-[0.5rem] text-slate-200 lg:hidden"
+                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                @endif
+            </div>
             @if(Session::has('api_token'))
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <div class="navbar-nav ms-auto align-items-center">
-                        <span class="nav-item nav-link text-light me-3 mb-0">{{ Session::get('user_email') }}</span>
-                        <button id="registerBiometricsBtn" class="btn btn-sm btn-outline-info me-lg-3 my-2 my-lg-0 d-none">
-                            <i class="bi bi-fingerprint me-1"></i>Register Biometrics
-                        </button>
-                        <a class="nav-link" href="{{ route('logout') }}">Logout</a>
-                    </div>
+                <div id="navbarNav"
+                     class="hidden flex-col items-start gap-[0.5rem] pb-[0.75rem] lg:flex lg:flex-row lg:items-center lg:gap-6 lg:pb-0">
+                    <span class="text-sm text-slate-100">{{ Session::get('user_email') }}</span>
+                    <button id="registerBiometricsBtn"
+                            class="hidden items-center rounded-md border-[1px] border-sky-400 px-[0.75rem] py-[0.375rem] text-sm font-medium text-sky-300 transition hover:bg-sky-400 hover:text-slate-900">
+                        <i class="bi bi-fingerprint mr-1"></i>Register Biometrics
+                    </button>
+                    <a class="text-sm text-slate-300 no-underline transition hover:text-white" href="{{ route('logout') }}">Logout</a>
                 </div>
             @endif
         </div>
@@ -51,6 +55,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async function () {
+        wireNavbarToggle();
+
         const registerBtn = document.getElementById('registerBiometricsBtn');
         if (!registerBtn) return; // not logged in
 
@@ -63,7 +69,8 @@
         } catch (_) { /* ignore */ }
 
         if (platformAvailable) {
-            registerBtn.classList.remove('d-none');
+            registerBtn.classList.remove('hidden');
+            registerBtn.classList.add('inline-flex');
         }
 
         // ── Biometric registration ────────────────────────────────────────────
@@ -140,11 +147,27 @@
             } catch (err) {
                 handleWebAuthnError(err);
             } finally {
-                setButtonLoading(registerBtn, false, '<i class="bi bi-fingerprint me-1"></i>Register Biometrics');
+                setButtonLoading(registerBtn, false, '<i class="bi bi-fingerprint mr-1"></i>Register Biometrics');
             }
         }
 
         // ── Shared helpers ────────────────────────────────────────────────────
+
+        // Swaps `hidden` for `flex` rather than toggling one class, because the menu carries
+        // `lg:flex` for desktop: leaving `hidden` on it would be harmless there but leaving
+        // `flex` on it would break the stacked layout the next time the window narrows.
+        function wireNavbarToggle() {
+            const toggle = document.getElementById('navbarToggle');
+            const menu   = document.getElementById('navbarNav');
+            if (!toggle || !menu) return;
+
+            toggle.addEventListener('click', () => {
+                const opening = menu.classList.contains('hidden');
+                menu.classList.toggle('hidden', !opening);
+                menu.classList.toggle('flex', opening);
+                toggle.setAttribute('aria-expanded', String(opening));
+            });
+        }
 
         function handleWebAuthnError(err) {
             console.error('WebAuthn error:', err);
@@ -163,7 +186,7 @@
         function setButtonLoading(btn, loading, label) {
             if (loading) {
                 btn.dataset.originalHtml = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${label}`;
+                btn.innerHTML = `<span class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" role="status" aria-hidden="true"></span>${label}`;
                 btn.disabled  = true;
             } else {
                 btn.innerHTML = btn.dataset.originalHtml || label;
