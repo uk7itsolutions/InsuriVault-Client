@@ -2,7 +2,10 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\AuthenticationServiceException;
+use App\Exceptions\HostNotActiveException;
 use App\Services\InsuriVaultApiService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -166,5 +169,73 @@ class InsuriVaultApiServiceTest extends TestCase
         Http::assertSent(function ($request) {
             return json_decode($request->body(), true)['organization'] === 'Some Other Organization';
         });
+    }
+
+    // A wrong password is the one failure the person signing in can correct, and the only one that
+    // may keep the credentials message. The API answers it with a bare 401 and no body.
+    public function test_get_token_returns_null_when_the_api_refuses_the_credentials()
+    {
+        Http::fake(['*UserAuthentication/GetToken*' => Http::response(null, 401)]);
+
+        $this->assertNull(app(InsuriVaultApiService::class)->getToken('qa@example.com', 'wrong'));
+    }
+
+    // The allowlist refusal is a 401 as well, which is why the status on its own cannot decide
+    // this. The API reaches it before it reads the email address, so telling it apart discloses
+    // nothing about who holds an account — and it is the failure that had a correctly configured
+    // portal reporting a password that was in fact right.
+    public function test_get_token_throws_when_the_caller_is_not_allowlisted()
+    {
+        Http::fake([
+            '*UserAuthentication/GetToken*' => Http::response('Service not active for this caller.', 401),
+        ]);
+
+        $this->expectException(HostNotActiveException::class);
+
+        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+    }
+
+    // Sent when neither the organization nor the origin host resolves a tenant. That is portal
+    // configuration, and no email address reaches the database before it is decided, so it shares
+    // the inactive-host message rather than the one for an API that could not answer.
+    public function test_get_token_throws_when_the_api_cannot_resolve_the_organization()
+    {
+        Http::fake([
+            '*UserAuthentication/GetToken*' => Http::response('Organization or valid OriginHost is required.', 400),
+        ]);
+
+        $this->expectException(HostNotActiveException::class);
+
+        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+    }
+
+    // A fault is not a refusal. Reporting it as an inactive host would send an operator to the
+    // allowlist for a problem that is not there, so the two throw different types.
+    public function test_get_token_throws_when_the_api_faults()
+    {
+        Http::fake(['*UserAuthentication/GetToken*' => Http::response('Internal server error', 500)]);
+
+        $this->expectException(AuthenticationServiceException::class);
+        $this->expectExceptionMessage('Internal server error');
+
+        try {
+            app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+        } catch (HostNotActiveException $exception) {
+            $this->fail('A server fault must not be reported as an inactive host.');
+        }
+    }
+
+    // A refused connection or a timeout throws out of the HTTP client instead of returning a
+    // response, so before this it left the controller uncaught and became an error page rather
+    // than anything the login form could show.
+    public function test_get_token_throws_when_the_api_cannot_be_reached()
+    {
+        Http::fake(function () {
+            throw new ConnectionException('Connection timed out');
+        });
+
+        $this->expectException(AuthenticationServiceException::class);
+
+        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
     }
 }

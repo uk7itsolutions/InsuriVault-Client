@@ -25,6 +25,7 @@ A Laravel 12 web application for managing and viewing documents from the InsuriV
    Ensure you have the correct API settings in `.env`.
    - **`INSURIVAULT_API_URL`**: Point this to `https://client-api-dev.insuri-vault.com` for testing/development, and `https://client-api.insuri-vault.com` for production.
    - **`INSURIVAULT_ORGANIZATION`**: Should match your client's organization name. You can use `"Demo Organization"` when pointing to the development/test API.
+   - **`ORGANIZATION_DISPLAY_NAME`**: How your organization is named to the people signing in — the portal shows it when it has to tell a client who to contact. Presentation only; it is never sent to the API, so it is free to differ from `INSURIVAULT_ORGANIZATION`, which has to keep matching the master account. Left unset, the portal says "your administrator" instead.
 3. Build and start the containers:
    ```bash
    docker compose up -d --build

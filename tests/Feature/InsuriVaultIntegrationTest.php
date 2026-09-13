@@ -70,8 +70,134 @@ class InsuriVaultIntegrationTest extends TestCase
             'password' => 'wrong-password',
         ]);
 
-        $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
         $this->assertNull(session('api_token'));
+    }
+
+    // The bug this pins down: a portal whose address was not allowlisted was told its password was
+    // wrong. The refusal happens before the API reads the email, so the password was never checked
+    // and was in fact correct. The message has to send the operator to the log instead, and must
+    // not quote what the API said — the login page is unauthenticated.
+    public function test_a_portal_the_api_refuses_is_not_told_its_password_is_wrong()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Service not active for this caller.', 401),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $response->assertSessionHasErrors(['email' => 'Service not active for the calling host.']);
+        $this->assertNull(session('api_token'));
+    }
+
+    // The message names the condition and nothing else. The API's own body carried the resolved
+    // address and the organization until PR 53 removed them, and the login page is unauthenticated,
+    // so neither may reappear here by way of the portal.
+    public function test_the_refusal_message_carries_no_address_or_organization()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(
+                "Service not active for the current host: 203.0.113.7. Please ensure this IP is whitelisted for the organization 'QA Organization'.",
+                401
+            ),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $message = session('errors')->first('email');
+        $this->assertStringNotContainsString('203.0.113.7', $message);
+        $this->assertStringNotContainsString('QA Organization', $message);
+    }
+
+    // A faulted or unreachable API is not the same condition and must not claim the host is
+    // unauthorised — that would send an operator to the allowlist for a problem that is not there.
+    // The client is referred to the organization by the name it chose to be known by, which is
+    // deliberately not the name the API resolves the tenant with.
+    public function test_an_unreachable_service_refers_the_client_to_the_organization()
+    {
+        $this->withoutMiddleware();
+        config(['portal.organization_display_name' => 'Acme Insurance']);
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Internal server error', 500),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $message = session('errors')->first('email');
+        $this->assertStringContainsString('temporarily unavailable', $message);
+        $this->assertStringContainsString('Acme Insurance', $message);
+        $this->assertStringNotContainsString('Service not active', $message);
+        $this->assertStringNotContainsString('credentials do not match', $message);
+    }
+
+    // A self-hosted portal that never set the display name would otherwise end the sentence on
+    // nothing, on the one screen that has to stay legible.
+    public function test_an_unset_display_name_still_leaves_a_readable_sentence()
+    {
+        $this->withoutMiddleware();
+        config(['portal.organization_display_name' => null]);
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Internal server error', 500),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $this->assertStringContainsString('contact your administrator.', session('errors')->first('email'));
+    }
+
+    // The display name is presentation only. Sending it to the API instead of the configured
+    // organization would break tenant resolution on every deployment where the two differ, which
+    // is the case this configuration exists to allow.
+    public function test_the_display_name_is_never_sent_to_the_api()
+    {
+        $this->withoutMiddleware();
+        config(['portal.organization_display_name' => 'Acme Insurance']);
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(['token' => 'jwt'], 200),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        Http::assertSent(function ($request) {
+            return !str_contains($request->body(), 'Acme Insurance')
+                && json_decode($request->body(), true)['organization'] === 'QA Organization';
+        });
+    }
+
+    // The login page posts as JSON for the biometric enrolment flow and renders body.error in a
+    // toast, so that path carries the message too and needs the same distinction.
+    public function test_the_json_login_path_reports_a_refused_portal_as_unauthorised()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Service not active for this caller.', 401),
+        ]);
+
+        $response = $this->postJson('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertStringContainsString('Service not active for the calling host', $response->json('error'));
+        $this->assertStringNotContainsString('credentials do not match', $response->json('error'));
     }
 
     public function test_document_listing()

@@ -25,6 +25,7 @@ class SaveInsuriVaultSettings
             $extraContent .= 'INSURIVAULT_API_URL="' . $request->input('insurivault_api_url') . "\"\n";
             $extraContent .= 'INSURIVAULT_ORGANIZATION="' . $request->input('insurivault_organization') . "\"\n";
             $extraContent .= 'INSURIVAULT_ORIGIN_HOST="' . $request->input('insurivault_origin_host') . "\"\n";
+            $extraContent .= 'ORGANIZATION_DISPLAY_NAME="' . $request->input('organization_display_name') . "\"\n";
             $extraContent .= 'INSURIVAULT_VERIFY_SSL=' . $request->input('insurivault_verify_ssl') . "\n";
             $extraContent .= 'INSURIVAULT_API_TIMEOUT=300' . "\n";
 

@@ -2,12 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AuthenticationServiceException;
+use App\Exceptions\HostNotActiveException;
 use App\Services\InsuriVaultApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
+    private const CREDENTIALS_REJECTED_MESSAGE = 'The provided credentials do not match our records.';
+
+    private const HOST_NOT_ACTIVE_MESSAGE = 'Service not active for the calling host.';
+
+    private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is temporarily unavailable. Please try again shortly, if this persists please contact %s.';
+
+    private const UNNAMED_ORGANIZATION = 'your administrator';
+
     protected $apiService;
 
     public function __construct(InsuriVaultApiService $apiService)
@@ -36,7 +46,33 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $token = $this->apiService->getToken($credentials['email'], $credentials['password']);
+        try {
+            $token = $this->apiService->getToken($credentials['email'], $credentials['password']);
+        } catch (HostNotActiveException $exception) {
+            if (config('app.debug')) {
+                \Illuminate\Support\Facades\Log::debug('AuthController login failed, no host active for this portal');
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => self::HOST_NOT_ACTIVE_MESSAGE], 403);
+            }
+
+            return back()->withErrors([
+                'email' => self::HOST_NOT_ACTIVE_MESSAGE,
+            ]);
+        } catch (AuthenticationServiceException $exception) {
+            if (config('app.debug')) {
+                \Illuminate\Support\Facades\Log::debug('AuthController login failed, the service could not answer');
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $this->serviceUnavailableMessage()], 503);
+            }
+
+            return back()->withErrors([
+                'email' => $this->serviceUnavailableMessage(),
+            ]);
+        }
 
         if ($token) {
             if (config('app.debug')) {
@@ -63,12 +99,27 @@ class AuthController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['error' => 'The provided credentials do not match our records.'], 401);
+            return response()->json(['error' => self::CREDENTIALS_REJECTED_MESSAGE], 401);
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => self::CREDENTIALS_REJECTED_MESSAGE,
         ]);
+    }
+
+    /**
+     * Falls back to a generic referral when no display name is configured, so the sentence still
+     * reads and still tells the client to ask someone. A self-hosted portal that never set the
+     * value would otherwise end mid-sentence on the one screen that has to be legible.
+     */
+    private function serviceUnavailableMessage()
+    {
+        $organizationName = config('portal.organization_display_name');
+
+        return sprintf(
+            self::SERVICE_UNAVAILABLE_MESSAGE,
+            filled($organizationName) ? $organizationName : self::UNNAMED_ORGANIZATION
+        );
     }
 
     public function getRegisterOptions()
