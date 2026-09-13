@@ -12,9 +12,11 @@ class AuthController extends Controller
 {
     private const CREDENTIALS_REJECTED_MESSAGE = 'The provided credentials do not match our records.';
 
-    private const HOST_NOT_ACTIVE_MESSAGE = 'Service not active for the current host. This portal has not been authorised to reach the document service, so no sign-in can be completed from it. Please contact your administrator.';
+    private const HOST_NOT_ACTIVE_MESSAGE = 'Service not active for the current host.';
 
-    private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is temporarily unavailable. The portal could not reach the document service. Please try again shortly, and contact your administrator if it continues.';
+    private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is temporarily unavailable. Please try again shortly, if this persists please contact %s.';
+
+    private const UNNAMED_ORGANIZATION = 'your administrator';
 
     protected $apiService;
 
@@ -64,11 +66,11 @@ class AuthController extends Controller
             }
 
             if ($request->wantsJson()) {
-                return response()->json(['error' => self::SERVICE_UNAVAILABLE_MESSAGE], 503);
+                return response()->json(['error' => $this->serviceUnavailableMessage()], 503);
             }
 
             return back()->withErrors([
-                'email' => self::SERVICE_UNAVAILABLE_MESSAGE,
+                'email' => $this->serviceUnavailableMessage(),
             ]);
         }
 
@@ -103,6 +105,21 @@ class AuthController extends Controller
         return back()->withErrors([
             'email' => self::CREDENTIALS_REJECTED_MESSAGE,
         ]);
+    }
+
+    /**
+     * Falls back to a generic referral when no display name is configured, so the sentence still
+     * reads and still tells the client to ask someone. A self-hosted portal that never set the
+     * value would otherwise end mid-sentence on the one screen that has to be legible.
+     */
+    private function serviceUnavailableMessage()
+    {
+        $organizationName = config('portal.organization_display_name');
+
+        return sprintf(
+            self::SERVICE_UNAVAILABLE_MESSAGE,
+            filled($organizationName) ? $organizationName : self::UNNAMED_ORGANIZATION
+        );
     }
 
     public function getRegisterOptions()

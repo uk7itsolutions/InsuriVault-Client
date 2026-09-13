@@ -535,6 +535,18 @@
                                 </span>
                             @endif
                         </div>
+                        <div class="form-group {{ $errors->has('organization_display_name') ? ' has-error ' : '' }}">
+                            <label for="organization_display_name">
+                                {{ trans('installer_messages.environment.wizard.form.app_tabs.organization_display_name_label') }}
+                            </label>
+                            <input type="text" name="organization_display_name" id="organization_display_name" value="" placeholder="{{ trans('installer_messages.environment.wizard.form.app_tabs.organization_display_name_placeholder') }}" />
+                            @if ($errors->has('organization_display_name'))
+                                <span class="error-block">
+                                    <i class="fa fa-fw fa-exclamation-triangle" aria-hidden="true"></i>
+                                    {{ $errors->first('organization_display_name') }}
+                                </span>
+                            @endif
+                        </div>
                         <div class="form-group {{ $errors->has('insurivault_verify_ssl') ? ' has-error ' : '' }}">
                             <label for="insurivault_verify_ssl">
                                 {{ trans('installer_messages.environment.wizard.form.app_tabs.insurivault_verify_ssl_label') }}

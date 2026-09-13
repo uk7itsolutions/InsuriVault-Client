@@ -156,6 +156,8 @@ return [
                     'insurivault_organization_placeholder' => 'Your Organization',
                     'insurivault_origin_host_label' => 'Origin Host (Optional)',
                     'insurivault_origin_host_placeholder' => 'Origin Host',
+                    'organization_display_name_label' => 'Display Name (shown to your clients)',
+                    'organization_display_name_placeholder' => 'Your Organization',
                     'insurivault_verify_ssl_label' => 'Verify SSL',
                 ],
                 'buttons' => [

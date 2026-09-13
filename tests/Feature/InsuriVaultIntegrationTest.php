@@ -90,10 +90,7 @@ class InsuriVaultIntegrationTest extends TestCase
             'password' => 'correct-password',
         ]);
 
-        $response->assertSessionHasErrors('email');
-        $message = session('errors')->first('email');
-        $this->assertStringContainsString('Service not active for the current host', $message);
-        $this->assertStringNotContainsString('credentials do not match', $message);
+        $response->assertSessionHasErrors(['email' => 'Service not active for the current host.']);
         $this->assertNull(session('api_token'));
     }
 
@@ -122,9 +119,12 @@ class InsuriVaultIntegrationTest extends TestCase
 
     // A faulted or unreachable API is not the same condition and must not claim the host is
     // unauthorised — that would send an operator to the allowlist for a problem that is not there.
-    public function test_an_unreachable_service_is_not_reported_as_an_inactive_host()
+    // The client is referred to the organization by the name it chose to be known by, which is
+    // deliberately not the name the API resolves the tenant with.
+    public function test_an_unreachable_service_refers_the_client_to_the_organization()
     {
         $this->withoutMiddleware();
+        config(['portal.organization_display_name' => 'Acme Insurance']);
         Http::fake([
             "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Internal server error', 500),
         ]);
@@ -136,8 +136,49 @@ class InsuriVaultIntegrationTest extends TestCase
 
         $message = session('errors')->first('email');
         $this->assertStringContainsString('temporarily unavailable', $message);
+        $this->assertStringContainsString('Acme Insurance', $message);
         $this->assertStringNotContainsString('Service not active', $message);
         $this->assertStringNotContainsString('credentials do not match', $message);
+    }
+
+    // A self-hosted portal that never set the display name would otherwise end the sentence on
+    // nothing, on the one screen that has to stay legible.
+    public function test_an_unset_display_name_still_leaves_a_readable_sentence()
+    {
+        $this->withoutMiddleware();
+        config(['portal.organization_display_name' => null]);
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Internal server error', 500),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $this->assertStringContainsString('contact your administrator.', session('errors')->first('email'));
+    }
+
+    // The display name is presentation only. Sending it to the API instead of the configured
+    // organization would break tenant resolution on every deployment where the two differ, which
+    // is the case this configuration exists to allow.
+    public function test_the_display_name_is_never_sent_to_the_api()
+    {
+        $this->withoutMiddleware();
+        config(['portal.organization_display_name' => 'Acme Insurance']);
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(['token' => 'jwt'], 200),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        Http::assertSent(function ($request) {
+            return !str_contains($request->body(), 'Acme Insurance')
+                && json_decode($request->body(), true)['organization'] === 'QA Organization';
+        });
     }
 
     // The login page posts as JSON for the biometric enrolment flow and renders body.error in a
