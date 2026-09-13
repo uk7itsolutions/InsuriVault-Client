@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\AuthenticationServiceException;
+use App\Exceptions\HostNotActiveException;
 use App\Services\InsuriVaultApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -11,7 +12,9 @@ class AuthController extends Controller
 {
     private const CREDENTIALS_REJECTED_MESSAGE = 'The provided credentials do not match our records.';
 
-    private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is unavailable: the portal could not complete the request with the document service. This is not a password problem — the reason has been written to the application log (storage/logs/laravel.log).';
+    private const HOST_NOT_ACTIVE_MESSAGE = 'Service not active for the current host. This portal has not been authorised to reach the document service, so no sign-in can be completed from it. Please contact your administrator.';
+
+    private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is temporarily unavailable. The portal could not reach the document service. Please try again shortly, and contact your administrator if it continues.';
 
     protected $apiService;
 
@@ -43,9 +46,21 @@ class AuthController extends Controller
 
         try {
             $token = $this->apiService->getToken($credentials['email'], $credentials['password']);
+        } catch (HostNotActiveException $exception) {
+            if (config('app.debug')) {
+                \Illuminate\Support\Facades\Log::debug('AuthController login failed, no host active for this portal');
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => self::HOST_NOT_ACTIVE_MESSAGE], 403);
+            }
+
+            return back()->withErrors([
+                'email' => self::HOST_NOT_ACTIVE_MESSAGE,
+            ]);
         } catch (AuthenticationServiceException $exception) {
             if (config('app.debug')) {
-                \Illuminate\Support\Facades\Log::debug('AuthController login failed, the service refused the portal');
+                \Illuminate\Support\Facades\Log::debug('AuthController login failed, the service could not answer');
             }
 
             if ($request->wantsJson()) {

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Exceptions\AuthenticationServiceException;
+use App\Exceptions\HostNotActiveException;
 use App\Services\InsuriVaultApiService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -189,31 +190,39 @@ class InsuriVaultApiServiceTest extends TestCase
             '*UserAuthentication/GetToken*' => Http::response('Service not active for this caller.', 401),
         ]);
 
-        $this->expectException(AuthenticationServiceException::class);
+        $this->expectException(HostNotActiveException::class);
 
         app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
     }
 
     // Sent when neither the organization nor the origin host resolves a tenant. That is portal
-    // configuration, and no email address reaches the database before it is decided.
+    // configuration, and no email address reaches the database before it is decided, so it shares
+    // the inactive-host message rather than the one for an API that could not answer.
     public function test_get_token_throws_when_the_api_cannot_resolve_the_organization()
     {
         Http::fake([
             '*UserAuthentication/GetToken*' => Http::response('Organization or valid OriginHost is required.', 400),
         ]);
 
-        $this->expectException(AuthenticationServiceException::class);
+        $this->expectException(HostNotActiveException::class);
 
         app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
     }
 
+    // A fault is not a refusal. Reporting it as an inactive host would send an operator to the
+    // allowlist for a problem that is not there, so the two throw different types.
     public function test_get_token_throws_when_the_api_faults()
     {
         Http::fake(['*UserAuthentication/GetToken*' => Http::response('Internal server error', 500)]);
 
         $this->expectException(AuthenticationServiceException::class);
+        $this->expectExceptionMessage('Internal server error');
 
-        app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+        try {
+            app(InsuriVaultApiService::class)->getToken('qa@example.com', 'secret');
+        } catch (HostNotActiveException $exception) {
+            $this->fail('A server fault must not be reported as an inactive host.');
+        }
     }
 
     // A refused connection or a timeout throws out of the HTTP client instead of returning a

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\AuthenticationServiceException;
+use App\Exceptions\HostNotActiveException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -51,10 +52,10 @@ class InsuriVaultApiService
 
     /**
      * Returns the token, or null when the API refused the credentials — something the person
-     * signing in can correct themselves. Every other failure throws instead: the portal's address
-     * is not allowlisted for its organization, the organization does not resolve, the API faulted,
-     * or it could not be reached. None of those depend on the email address, which is what makes
-     * reporting them separately safe.
+     * signing in can correct themselves. Every other failure throws instead, as HostNotActiveException
+     * when the API admitted no host for this portal and as AuthenticationServiceException when it
+     * faulted or could not be reached. None of those depend on the email address, which is what
+     * makes reporting them separately safe.
      */
     public function getToken($email, $password)
     {
@@ -98,7 +99,11 @@ class InsuriVaultApiService
             'organization' => $this->organization,
         ]);
 
-        if ($this->refusedThePortalRatherThanTheCredentials($response)) {
+        if ($this->hostIsNotActive($response)) {
+            throw new HostNotActiveException($response->body());
+        }
+
+        if ($this->serviceCouldNotAnswer($response)) {
             throw new AuthenticationServiceException($response->body());
         }
 
@@ -106,21 +111,26 @@ class InsuriVaultApiService
     }
 
     /**
-     * Separates a failure the portal's operator has to fix from one the person signing in can.
-     * Only outcomes the API reaches before it reads the email address qualify: the allowlist
-     * refusal, an unresolvable organization, and any server fault. Every other 401 is left to read
-     * as a credential refusal — the API's "user not found" and "user not allowed" bodies are on
-     * their way to becoming byte-identical to a wrong password, so matching those would both break
-     * and disclose which addresses have accounts.
+     * True when the API admitted no host for this portal — its address is not allowlisted for the
+     * organization, or no organization resolved at all. Both are settled before the API reads the
+     * email address, so telling them apart on screen discloses nothing about who holds an account.
+     * Every other 401 is left to read as a credential refusal: the API's "user not found" and
+     * "user not allowed" bodies are on their way to becoming byte-identical to a wrong password,
+     * so matching those would both break and disclose which addresses have accounts.
      */
-    private function refusedThePortalRatherThanTheCredentials($response)
+    private function hostIsNotActive($response)
     {
-        if ($response->serverError() || $response->status() === 400) {
+        if ($response->status() === 400) {
             return true;
         }
 
         return $response->status() === 401
             && str_contains($response->body(), self::CALLER_NOT_ADMITTED_MESSAGE);
+    }
+
+    private function serviceCouldNotAnswer($response)
+    {
+        return $response->serverError();
     }
 
     public function getRegisterOptions($token)

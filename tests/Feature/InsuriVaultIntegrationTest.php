@@ -92,15 +92,57 @@ class InsuriVaultIntegrationTest extends TestCase
 
         $response->assertSessionHasErrors('email');
         $message = session('errors')->first('email');
-        $this->assertStringContainsString('storage/logs/laravel.log', $message);
+        $this->assertStringContainsString('Service not active for the current host', $message);
         $this->assertStringNotContainsString('credentials do not match', $message);
-        $this->assertStringNotContainsString('Service not active', $message);
         $this->assertNull(session('api_token'));
+    }
+
+    // The message names the condition and nothing else. The API's own body carried the resolved
+    // address and the organization until PR 53 removed them, and the login page is unauthenticated,
+    // so neither may reappear here by way of the portal.
+    public function test_the_refusal_message_carries_no_address_or_organization()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response(
+                "Service not active for the current host: 203.0.113.7. Please ensure this IP is whitelisted for the organization 'QA Organization'.",
+                401
+            ),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $message = session('errors')->first('email');
+        $this->assertStringNotContainsString('203.0.113.7', $message);
+        $this->assertStringNotContainsString('QA Organization', $message);
+    }
+
+    // A faulted or unreachable API is not the same condition and must not claim the host is
+    // unauthorised — that would send an operator to the allowlist for a problem that is not there.
+    public function test_an_unreachable_service_is_not_reported_as_an_inactive_host()
+    {
+        $this->withoutMiddleware();
+        Http::fake([
+            "{$this->baseUrl}/UserAuthentication/GetToken" => Http::response('Internal server error', 500),
+        ]);
+
+        $this->post('/login', [
+            'email' => 'qa@example.com',
+            'password' => 'correct-password',
+        ]);
+
+        $message = session('errors')->first('email');
+        $this->assertStringContainsString('temporarily unavailable', $message);
+        $this->assertStringNotContainsString('Service not active', $message);
+        $this->assertStringNotContainsString('credentials do not match', $message);
     }
 
     // The login page posts as JSON for the biometric enrolment flow and renders body.error in a
     // toast, so that path carries the message too and needs the same distinction.
-    public function test_the_json_login_path_reports_a_refused_portal_as_unavailable()
+    public function test_the_json_login_path_reports_a_refused_portal_as_unauthorised()
     {
         $this->withoutMiddleware();
         Http::fake([
@@ -112,8 +154,8 @@ class InsuriVaultIntegrationTest extends TestCase
             'password' => 'correct-password',
         ]);
 
-        $response->assertStatus(503);
-        $this->assertStringContainsString('storage/logs/laravel.log', $response->json('error'));
+        $response->assertStatus(403);
+        $this->assertStringContainsString('Service not active for the current host', $response->json('error'));
         $this->assertStringNotContainsString('credentials do not match', $response->json('error'));
     }
 
