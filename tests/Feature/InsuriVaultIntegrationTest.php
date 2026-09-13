@@ -90,7 +90,7 @@ class InsuriVaultIntegrationTest extends TestCase
             'password' => 'correct-password',
         ]);
 
-        $response->assertSessionHasErrors(['email' => 'Service not active for the current host.']);
+        $response->assertSessionHasErrors(['email' => 'Service not active for the calling host.']);
         $this->assertNull(session('api_token'));
     }
 
@@ -196,7 +196,7 @@ class InsuriVaultIntegrationTest extends TestCase
         ]);
 
         $response->assertStatus(403);
-        $this->assertStringContainsString('Service not active for the current host', $response->json('error'));
+        $this->assertStringContainsString('Service not active for the calling host', $response->json('error'));
         $this->assertStringNotContainsString('credentials do not match', $response->json('error'));
     }
 

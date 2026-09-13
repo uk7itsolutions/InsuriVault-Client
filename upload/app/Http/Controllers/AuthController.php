@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     private const CREDENTIALS_REJECTED_MESSAGE = 'The provided credentials do not match our records.';
 
-    private const HOST_NOT_ACTIVE_MESSAGE = 'Service not active for the current host.';
+    private const HOST_NOT_ACTIVE_MESSAGE = 'Service not active for the calling host.';
 
     private const SERVICE_UNAVAILABLE_MESSAGE = 'Sign-in is temporarily unavailable. Please try again shortly, if this persists please contact %s.';
 
