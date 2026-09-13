@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     volumes:
       - .:/var/www
     ports:
@@ -27,7 +27,7 @@ services:
   laravel-phpstorm:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     volumes:
       - .:/var/www
     extra_hosts:
