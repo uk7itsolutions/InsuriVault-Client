@@ -122,9 +122,9 @@ class PortalTheme
             $properties['--portal-accent-ring'] = self::mix($accent, 85, 'white');
             $properties['--portal-accent-bright'] = self::mix($accent, 62, 'white');
             $properties['--portal-accent-bright-text'] = self::mix($accent, 48, 'white');
-            $properties['--portal-accent-surface'] = self::mix($accent, 10, 'white');
-            $properties['--portal-accent-border'] = self::mix($accent, 28, 'white');
-            $properties['--portal-accent-text'] = self::mix($accent, 78, 'black');
+            $properties['--portal-accent-surface'] = self::mix($accent, 12, 'var(--portal-surface)');
+            $properties['--portal-accent-border'] = self::mix($accent, 35, 'var(--portal-surface)');
+            $properties['--portal-accent-text'] = self::mix($accent, 35, 'var(--portal-text)');
         }
 
         return $properties;
@@ -173,6 +173,12 @@ class PortalTheme
         return sprintf('var(--color-%s-%s)', $family, $shade);
     }
 
+    /**
+     * Mixes towards another token rather than towards white or black wherever the result sits on a
+     * surface: the base decides what that surface is, so a tint written against white turns into a
+     * pale box on a dark portal. Mixing towards the token keeps the operator's accent following
+     * whichever base is underneath it.
+     */
     private static function mix($color, $percentage, $towards)
     {
         return sprintf('color-mix(in oklab, %s %d%%, %s)', $color, $percentage, $towards);

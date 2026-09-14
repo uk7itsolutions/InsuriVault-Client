@@ -184,6 +184,22 @@ class PortalThemeTest extends TestCase
         $response->assertDontSee('<style>', false);
     }
 
+    // An accent brings tinted companions with it — the panel behind an empty state, its border,
+    // its text. Those were originally mixed towards white and black, which is only correct on a
+    // light portal: over dark they rendered as a pale box on a dark page. Mixing towards the
+    // surface and text tokens instead means the base underneath decides, whichever it is.
+    public function test_the_accents_tinted_companions_follow_the_base_beneath_them()
+    {
+        $this->baseTheme('dark');
+        $this->theme(['accent_color' => 'emerald-500']);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent-surface:color-mix(in oklab, var(--color-emerald-500) 12%, var(--portal-surface));', false);
+        $response->assertSee('--portal-accent-text:color-mix(in oklab, var(--color-emerald-500) 35%, var(--portal-text));', false);
+        $response->assertDontSee('12%, white', false);
+    }
+
     public function test_an_unknown_base_theme_leaves_the_portal_as_it_ships()
     {
         $this->baseTheme('midnight');
