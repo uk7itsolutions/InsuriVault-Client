@@ -50,10 +50,13 @@ class PortalTheme
     ];
 
     /**
-     * Orange and yellow need the same departures, on both bases. Their deep shades are brown
-     * rather than orange, so the bar is taken from the bright end of the palette instead, and
-     * everything that then sits on a bright warm ground takes near-black text — white on amber
-     * is unreadable, which is the same reason yellow draws from amber in the first place.
+     * Yellow has no middle: its deep shades are brown rather than yellow, so the bar comes from
+     * the bright end of the palette, and everything sitting on that bright ground takes near-black
+     * text — white on amber is unreadable, the same reason yellow draws from amber at all.
+     *
+     * Orange does have a middle and uses it instead, desaturated towards slate: bright orange is
+     * tiring to look at for the length of a session, and the burnt end still reads as orange where
+     * amber's reads as brown.
      */
     private const WARM_SURFACES = [
         'nav-surface' => '600',
@@ -86,11 +89,19 @@ class PortalTheme
         ],
         'orange' => [
             'family' => 'orange',
-            'light' => '500',
-            'dark' => '400',
+            'light' => 'color-mix(in oklab, {700} 88%, var(--color-slate-600))',
+            'dark' => 'color-mix(in oklab, {500} 85%, var(--color-slate-500))',
             'shades' => [
-                'light' => self::WARM_SURFACES,
-                'dark' => self::WARM_SURFACES,
+                'light' => [
+                    'nav-surface' => 'color-mix(in oklab, {700} 90%, var(--color-slate-600))',
+                    'badge' => 'color-mix(in oklab, {600} 85%, var(--color-slate-500))',
+                ],
+                'dark' => [
+                    'nav-surface' => 'color-mix(in oklab, {800} 88%, var(--color-slate-800))',
+                    'badge' => 'color-mix(in oklab, {500} 85%, var(--color-slate-500))',
+                    'badge-text' => '950',
+                    'accent-contrast' => '950',
+                ],
             ],
         ],
         'yellow' => [
