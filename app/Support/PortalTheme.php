@@ -89,12 +89,13 @@ class PortalTheme
         ],
         'orange' => [
             'family' => 'orange',
-            'light' => 'color-mix(in oklab, {700} 88%, var(--color-slate-600))',
+            'light' => 'color-mix(in oklab, {600} 92%, var(--color-slate-400))',
             'dark' => 'color-mix(in oklab, {500} 85%, var(--color-slate-500))',
             'shades' => [
                 'light' => [
                     'nav-surface' => 'color-mix(in oklab, {700} 90%, var(--color-slate-600))',
-                    'badge' => 'color-mix(in oklab, {600} 85%, var(--color-slate-500))',
+                    'badge' => 'color-mix(in oklab, {700} 88%, var(--color-slate-600))',
+                    'accent-contrast' => '950',
                 ],
                 'dark' => [
                     'nav-surface' => 'color-mix(in oklab, {800} 88%, var(--color-slate-800))',
