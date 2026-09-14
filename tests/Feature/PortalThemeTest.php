@@ -170,6 +170,20 @@ class PortalThemeTest extends TestCase
         $response->assertSee('--portal-page:var(--color-slate-900);', false);
     }
 
+    // Light is the portal as it ships, so naming it claims nothing and emits nothing. It exists as
+    // a value an operator can write rather than as a blank they have to infer — and once colour
+    // schemes land it is the mode a light scheme is applied to.
+    public function test_naming_the_light_base_is_the_same_as_naming_none()
+    {
+        $this->baseTheme('light');
+        $this->theme([]);
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('<style>', false);
+    }
+
     public function test_an_unknown_base_theme_leaves_the_portal_as_it_ships()
     {
         $this->baseTheme('midnight');

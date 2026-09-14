@@ -126,20 +126,25 @@ PORTAL_ACCENT_COLOR=indigo-700
 | `PORTAL_NAVIGATION_TEXT_COLOR` | The navigation bar's text, and the muted tone used for the Logout link and the menu button. | `slate-50` |
 | `PORTAL_ACCENT_COLOR` | The login header band, the Login button, the View button, links, and focus outlines on the login form. | `sky-700` |
 
-### Base themes
+### Base theme: light or dark
 
-`PORTAL_BASE_THEME` picks a whole design rather than a single colour — the page, the cards, the
-borders, the text tones and the accent all move together.
+`PORTAL_BASE_THEME` decides whether the portal is light or dark. It repaints everything — the
+page, the cards, the borders, the text tones and the accent all move together.
 
 | Name | What you get |
 |---|---|
-| *(empty)* | The light theme the portal ships with: a dark slate bar over a near-white page. |
+| *(empty)* or `light` | The portal as it ships: a dark slate bar over a near-white page. |
 | `dark` | A dark portal throughout — near-black bar, dark page, dark cards, light text, a brighter sky accent so actions still stand out. |
 
-An unrecognised name is ignored and you get the shipped light theme.
+An unrecognised name is ignored and you get the light portal.
 
-**The colour settings are written over the theme, not instead of it.** This is the part worth
-understanding, because it is what makes the themes useful as a starting point:
+**Settings stack, in three layers.** The base is the bottom of them:
+
+1. **The base theme** — light or dark. Decides every surface.
+2. **A colour scheme** — tints that base. *(Coming: blue, green and purple, each working on either base.)*
+3. **The individual colours below** — written last, and they win over both.
+
+That is what makes the base a starting point rather than a choice you have to live with:
 
 ```dotenv
 PORTAL_BASE_THEME=dark

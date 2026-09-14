@@ -24,11 +24,12 @@ return [
     | Base Theme
     |--------------------------------------------------------------------------
     |
-    | A complete design to start from, named rather than switched on so further
-    | themes can be added without retiring a setting operators already carry.
-    | An unrecognised name leaves the portal as it ships, like any other value
-    | here. The colours below are written over whichever theme is chosen, so a
-    | base theme is a starting point rather than an alternative to them.
+    | Whether the portal is light or dark. This is the bottom of three layers:
+    | the base decides every surface, a colour scheme will tint it, and the
+    | individual colours below are written last and win over both. Named rather
+    | than switched on so the vocabulary can grow without retiring a setting
+    | operators already carry. An unrecognised name leaves the portal as it
+    | ships, like any other value here.
     |
     */
 

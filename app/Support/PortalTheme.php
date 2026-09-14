@@ -18,6 +18,8 @@ class PortalTheme
 
     private const BASE_THEMES = [
 
+        'light' => [],
+
         'dark' => [
             '--portal-page' => 'var(--color-slate-900)',
             '--portal-surface' => 'var(--color-slate-800)',
@@ -71,9 +73,11 @@ class PortalTheme
     }
 
     /**
-     * The values of the named base theme, or nothing at all when no theme is named or the name is
-     * not one that exists. An unrecognised name leaves the portal exactly as it ships rather than
-     * failing, for the same reason an unrecognised colour does.
+     * The values of the named base, or nothing at all when none is named or the name is not one
+     * that exists. Light is the portal as it ships and so claims no properties — it is spelled out
+     * rather than left implicit so that an operator can state the choice, and so that a colour
+     * scheme has a mode to be applied to. An unrecognised name leaves the portal as it ships
+     * rather than failing, for the same reason an unrecognised colour does.
      */
     private static function baseThemeProperties()
     {
