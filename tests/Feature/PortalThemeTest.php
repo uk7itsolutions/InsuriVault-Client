@@ -14,6 +14,7 @@ class PortalThemeTest extends TestCase
         parent::setUp();
 
         $this->baseTheme(null);
+        $this->colorScheme(null);
         $this->theme([]);
     }
 
@@ -29,6 +30,11 @@ class PortalThemeTest extends TestCase
     private function baseTheme($name): void
     {
         config(['portal.base_theme' => $name]);
+    }
+
+    private function colorScheme($name): void
+    {
+        config(['portal.color_scheme' => $name]);
     }
 
     // The case every new operator hits: a blank .env must leave the portal exactly as it shipped.
@@ -209,6 +215,169 @@ class PortalThemeTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertDontSee('<style>', false);
+    }
+
+    // The same scheme means something different on each base, which is the whole reason it is a
+    // layer rather than a fourth base. Over light it takes the page and the borders, because a
+    // white portal with only a coloured bar barely reads as themed. Over dark it takes the bar
+    // and the accents and leaves the surfaces alone.
+    public function test_a_scheme_tints_light_and_dark_differently()
+    {
+        $this->colorScheme('green');
+        $light = $this->get('/login');
+
+        $light->assertSee('--portal-page:color-mix(in oklab, var(--color-emerald-50) 45%, var(--color-white));', false);
+        $light->assertSee('--portal-nav-surface:var(--color-emerald-900);', false);
+        $light->assertSee('--portal-accent:var(--color-emerald-700);', false);
+
+        $this->baseTheme('dark');
+        $dark = $this->get('/login');
+
+        $dark->assertSee('--portal-page:var(--color-slate-900);', false);
+        $dark->assertSee('--portal-nav-surface:var(--color-emerald-950);', false);
+        $dark->assertSee('--portal-accent:var(--color-emerald-400);', false);
+    }
+
+    // A scheme has to reach past the accent, or it is a name for something one setting already
+    // did. These are the surfaces that make it a design rather than a tinted button.
+    public function test_a_scheme_reaches_the_surfaces_and_not_only_the_accent()
+    {
+        $this->colorScheme('indigo');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-surface-muted:color-mix(in oklab, var(--color-indigo-100) 60%, var(--color-white));', false);
+        $response->assertSee('--portal-border:color-mix(in oklab, var(--color-indigo-200) 75%, var(--color-white));', false);
+        $response->assertSee('--portal-badge:var(--color-indigo-800);', false);
+    }
+
+    // The name an operator writes and the palette it draws from are deliberately separate. A true
+    // yellow is illegible as a button colour and unpleasant as a page, so yellow draws from amber
+    // — the operator gets the colour they meant rather than the one they named, without having to
+    // know that amber is what they wanted.
+    public function test_yellow_draws_from_amber_rather_than_from_yellow()
+    {
+        $this->colorScheme('yellow');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:color-mix(in oklab, var(--color-amber-50) 45%, var(--color-white));', false);
+        $response->assertSee('--portal-accent:var(--color-amber-400);', false);
+        $response->assertDontSee('--color-yellow-', false);
+    }
+
+    // The portal says "wrong" in rose — the login alert and the failure toast. A saturated red
+    // theme would dress the brand in the same colour as its own error messages, so red sits a
+    // step or two lighter than the shade rule the other six follow. The errors stay the loudest
+    // red on the screen, which is the only way a client can still tell them apart at a glance.
+    public function test_red_on_light_is_desaturated_rather_than_merely_lightened()
+    {
+        $this->colorScheme('red');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent:color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600));', false);
+        $response->assertSee('--portal-page:color-mix(in oklab, var(--color-red-50) 55%, var(--color-white));', false);
+        $response->assertDontSee('--portal-page:var(--color-red-50);', false);
+    }
+
+    // Over dark every scheme keeps the base's neutral surfaces and colours the bar, the badges
+    // and the accents only. Checked across all seven rather than one, because the rule lives in
+    // a shared table any scheme can override its way out of without anything noticing.
+    public function test_no_scheme_tints_the_dark_background()
+    {
+        $this->baseTheme('dark');
+
+        foreach (['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'] as $scheme) {
+            $this->colorScheme($scheme);
+
+            $response = $this->get('/login');
+
+            $response->assertSee('--portal-page:var(--color-slate-900);', false);
+            $response->assertSee('--portal-surface:var(--color-slate-800);', false);
+            $response->assertSee('--portal-border:var(--color-slate-600);', false);
+        }
+    }
+
+    // The accent is a button's background in some places and text on a card in others, and on a
+    // dark portal those want opposite things: a red dark enough to carry white text cannot be
+    // read as red text on a dark card. accent-on-surface mixes towards whatever the base set as
+    // its text colour, so it darkens on light and lightens on dark from the same one accent.
+    public function test_the_accent_used_as_text_resolves_against_the_bases_own_text_colour()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('red');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent-on-surface:color-mix(in oklab, color-mix(in oklab, var(--color-red-600) 82%, var(--color-slate-500)) 62%, var(--portal-text));', false);
+    }
+
+    // The other half of the dark rule: leaving the surfaces alone must not leave the portal
+    // untinted. The bar, the badges and the accent are what carry the hue there.
+    public function test_a_scheme_still_colours_the_bar_and_the_accent_over_dark()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('violet');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-nav-surface:var(--color-violet-950);', false);
+        $response->assertSee('--portal-badge:var(--color-violet-600);', false);
+        $response->assertSee('--portal-accent:var(--color-violet-400);', false);
+    }
+
+    // Every name in the documentation has to resolve to a scheme, in both directions: a rainbow
+    // with a hole in it is worse than a shorter list, and a scheme nobody documented is one an
+    // operator will never find.
+    public function test_every_documented_scheme_renders()
+    {
+        foreach (['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'] as $scheme) {
+            $this->colorScheme($scheme);
+
+            $response = $this->get('/login');
+
+            $response->assertStatus(200);
+            $response->assertSee('--portal-accent:', false);
+        }
+    }
+
+    // The stack, top to bottom, in one assertion: a dark base tinted blue, with the operator's own
+    // accent over both. Each layer keeps what the next one did not claim.
+    public function test_the_three_layers_stack_in_order()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('blue');
+        $this->theme(['accent_color' => 'rose-500']);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+        $response->assertSee('--portal-nav-surface:var(--color-blue-900);', false);
+        $response->assertSee('--portal-accent:var(--color-rose-500);', false);
+        $response->assertDontSee('--portal-accent:var(--color-blue-400);', false);
+        $response->assertDontSee('--portal-accent:var(--color-sky-500);', false);
+    }
+
+    public function test_an_unknown_scheme_leaves_the_base_untinted()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('turquoise');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+        $response->assertDontSee('emerald', false);
+    }
+
+    public function test_a_scheme_on_its_own_needs_no_base_to_be_named()
+    {
+        $this->colorScheme('green');
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('--portal-page:color-mix(in oklab, var(--color-emerald-50) 45%, var(--color-white));', false);
     }
 
     public function test_each_setting_is_independent_of_the_others()
