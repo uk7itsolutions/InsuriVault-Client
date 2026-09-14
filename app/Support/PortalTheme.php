@@ -93,7 +93,7 @@ class PortalTheme
             'dark' => 'color-mix(in oklab, {500} 85%, var(--color-slate-500))',
             'shades' => [
                 'light' => [
-                    'nav-surface' => 'color-mix(in oklab, {700} 90%, var(--color-slate-600))',
+                    'nav-surface' => 'color-mix(in oklab, {800} 92%, var(--color-slate-700))',
                     'badge' => 'color-mix(in oklab, {700} 88%, var(--color-slate-600))',
                     'accent-contrast' => '950',
                 ],
