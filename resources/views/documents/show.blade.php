@@ -1,36 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="row">
-    <div class="col-md-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('documents.index') }}">Documents</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ $fileInfo['originalFileName'] }}</li>
-            </ol>
-        </nav>
+<nav aria-label="breadcrumb">
+    <ol class="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+        <li><a class="text-sky-700 no-underline transition hover:underline" href="{{ route('documents.index') }}">Documents</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="text-slate-900" aria-current="page">{{ $fileInfo['originalFileName'] }}</li>
+    </ol>
+</nav>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>{{ $fileInfo['originalFileName'] }}</h2>
-            <a href="{{ route('documents.download', [$accountId, $fileId]) }}" class="btn btn-success">Download File</a>
-        </div>
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-3xl font-semibold text-slate-900">{{ $fileInfo['originalFileName'] }}</h2>
+    <a href="{{ route('documents.download', [$accountId, $fileId]) }}"
+       class="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white no-underline transition hover:bg-emerald-700">
+        <x-icon.download class="h-4 w-4"/>Download File
+    </a>
+</div>
 
-        <div class="card shadow">
-            <div class="card-body p-0">
-                @if(str_contains($fileInfo['contentType'], 'pdf'))
-                    <iframe src="data:{{ $fileInfo['contentType'] }};base64,{{ $base64Content }}" width="100%" height="800px" style="border: none;"></iframe>
-                @elseif(str_contains($fileInfo['contentType'], 'image'))
-                    <div class="text-center p-4">
-                        <img src="data:{{ $fileInfo['contentType'] }};base64,{{ $base64Content }}" class="img-fluid border" alt="{{ $fileInfo['originalFileName'] }}">
-                    </div>
-                @else
-                    <div class="p-5 text-center">
-                        <p>This file type ({{ $fileInfo['contentType'] }}) cannot be previewed directly.</p>
-                        <a href="{{ route('documents.download', [$accountId, $fileId]) }}" class="btn btn-primary">Download to View</a>
-                    </div>
-                @endif
-            </div>
+<div class="overflow-hidden rounded-lg bg-white shadow-lg">
+    @if(str_contains($fileInfo['contentType'], 'pdf'))
+        <iframe src="data:{{ $fileInfo['contentType'] }};base64,{{ $base64Content }}" class="block h-[800px] w-full border-0" title="{{ $fileInfo['originalFileName'] }}"></iframe>
+    @elseif(str_contains($fileInfo['contentType'], 'image'))
+        <div class="p-4 text-center">
+            <img src="data:{{ $fileInfo['contentType'] }};base64,{{ $base64Content }}"
+                 class="mx-auto h-auto max-w-full border-[1px] border-slate-200" alt="{{ $fileInfo['originalFileName'] }}">
         </div>
-    </div>
+    @else
+        <div class="p-12 text-center">
+            <p class="mb-4 text-sm text-slate-600">This file type ({{ $fileInfo['contentType'] }}) cannot be previewed directly.</p>
+            <a href="{{ route('documents.download', [$accountId, $fileId]) }}"
+               class="inline-flex items-center gap-2 rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white no-underline transition hover:bg-sky-800">
+                <x-icon.download class="h-4 w-4"/>Download to View
+            </a>
+        </div>
+    @endif
 </div>
 @endsection

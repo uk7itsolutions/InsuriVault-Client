@@ -314,4 +314,49 @@ class InsuriVaultIntegrationTest extends TestCase
         $response->assertRedirect('/login');
         $this->assertNull(session('api_token'));
     }
+
+    // Pins the removal of the Bootstrap CDN, not the appearance it used to provide. Nothing here
+    // can tell whether a screen looks right, but a page that fetches a stylesheet or a script from
+    // jsdelivr has both frameworks loaded again, and that much the response does say — which is
+    // what happened last time: the Tailwind pipeline landed and the CDN tags stayed.
+    public function test_no_page_loads_anything_from_a_cdn()
+    {
+        Http::fake([
+            "{$this->baseUrl}/AccountFileStorage/List" => Http::response([
+                [
+                    'account' => [
+                        'id' => 1,
+                        'name' => 'John Doe',
+                        'isActive' => true,
+                        'isDisabled' => false,
+                        'creationDate' => '2025-12-13T08:05:40',
+                        'updateDate' => '2026-04-05T04:09:55'
+                    ],
+                    'files' => [
+                        [
+                            'fileId' => 'file-123',
+                            'originalFileName' => 'test.pdf',
+                            'fileCategory' => 'Statement',
+                            'year' => 2025,
+                            'month' => 1,
+                            'contentType' => 'application/pdf',
+                            'uploadedAtUtc' => '2025-01-01T10:00:00Z'
+                        ]
+                    ]
+                ]
+            ], 200),
+        ]);
+
+        $pages = [
+            $this->get('/login'),
+            $this->withSession(['api_token' => 'fake-token', 'user_email' => 'john.doe@example.com'])->get('/'),
+        ];
+
+        foreach ($pages as $page) {
+            $page->assertStatus(200);
+            $page->assertDontSee('cdn.jsdelivr.net');
+            $page->assertDontSee('bootstrap-icons');
+            $page->assertDontSee('new bootstrap.');
+        }
+    }
 }

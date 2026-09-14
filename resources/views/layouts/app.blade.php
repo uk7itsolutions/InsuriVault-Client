@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InsuriVault Client</title>
     <!-- PWA -->
-    <meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#0f172b">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon.svg">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
-<body class="bg-[#f8f9fa]">
+<body class="bg-slate-50 font-sans text-slate-900">
     <nav class="mb-8 bg-slate-900">
-        <div class="mx-auto w-full max-w-[1320px] px-[0.75rem] lg:flex lg:h-16 lg:items-center lg:justify-between">
+        <div class="page-container lg:flex lg:h-16 lg:items-center lg:justify-between">
             <div class="flex h-16 items-center justify-between lg:h-auto">
                 <a class="text-xl font-semibold text-slate-50 no-underline" href="{{ route('documents.index') }}">InsuriVault</a>
                 @if(Session::has('api_token'))
@@ -34,7 +32,7 @@
                     <span class="text-sm text-slate-100">{{ Session::get('user_email') }}</span>
                     <button id="registerBiometricsBtn"
                             class="hidden items-center rounded-md border-[1px] border-sky-400 px-[0.75rem] py-[0.375rem] text-sm font-medium text-sky-300 transition hover:bg-sky-400 hover:text-slate-900">
-                        <i class="bi bi-fingerprint mr-1"></i>Register Biometrics
+                        <x-icon.fingerprint class="mr-1 h-4 w-4"/>Register Biometrics
                     </button>
                     <a class="text-sm text-slate-300 no-underline transition hover:text-white" href="{{ route('logout') }}">Logout</a>
                 </div>
@@ -42,17 +40,14 @@
         </div>
     </nav>
 
-    <div class="container">
+    <div class="page-container pb-12">
         @yield('content')
     </div>
 
-    <!-- Toast notification container -->
     <div id="toastContainer"
-         class="toast-container position-fixed bottom-0 end-0 p-3"
-         style="z-index: 1100;">
+         class="pointer-events-none fixed right-0 bottom-0 z-[1100] flex flex-col items-end gap-2 p-4">
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async function () {
         wireNavbarToggle();
@@ -77,7 +72,7 @@
         registerBtn.addEventListener('click', () => performRegistration());
 
         async function performRegistration() {
-            setButtonLoading(registerBtn, true, 'Registering\u2026');
+            setButtonLoading(registerBtn, true, 'Registering…');
 
             try {
                 // Step 1 – get registration options (challenge) from server
@@ -147,7 +142,7 @@
             } catch (err) {
                 handleWebAuthnError(err);
             } finally {
-                setButtonLoading(registerBtn, false, '<i class="bi bi-fingerprint mr-1"></i>Register Biometrics');
+                setButtonLoading(registerBtn, false);
             }
         }
 
@@ -183,34 +178,17 @@
             showToast(msg, type);
         }
 
-        function setButtonLoading(btn, loading, label) {
+        // Restores the button's own markup rather than a caller-supplied label, so the icon it was
+        // rendered with survives without the ceremony code having to repeat it as a string.
+        function setButtonLoading(button, loading, loadingLabel) {
             if (loading) {
-                btn.dataset.originalHtml = btn.innerHTML;
-                btn.innerHTML = `<span class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" role="status" aria-hidden="true"></span>${label}`;
-                btn.disabled  = true;
+                button.dataset.originalHtml = button.innerHTML;
+                button.innerHTML = `<span class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" role="status" aria-hidden="true"></span>${loadingLabel}`;
+                button.disabled  = true;
             } else {
-                btn.innerHTML = btn.dataset.originalHtml || label;
-                btn.disabled  = false;
+                button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+                button.disabled  = false;
             }
-        }
-
-        function showToast(message, type) {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const id = 'toast-' + Date.now();
-            container.insertAdjacentHTML('beforeend', `
-                <div id="${id}" class="toast align-items-center text-bg-${type} border-0"
-                     role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                                data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>`);
-            const el    = document.getElementById(id);
-            const toast = new bootstrap.Toast(el, { autohide: true, delay: 5000 });
-            toast.show();
-            el.addEventListener('hidden.bs.toast', () => el.remove());
         }
 
         function base64ToBuffer(base64) {
