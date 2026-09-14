@@ -217,10 +217,10 @@ class PortalThemeTest extends TestCase
         $response->assertDontSee('<style>', false);
     }
 
-    // The same scheme has to mean something different on each base, which is the whole reason it
-    // is a layer rather than a fourth base: over light it is a pale page with a deep bar, over
-    // dark it is a deep page throughout. A scheme that emitted one set of values for both would
-    // read correctly on whichever base its author happened to be looking at.
+    // The same scheme means something different on each base, which is the whole reason it is a
+    // layer rather than a fourth base. Over light it takes the page and the borders, because a
+    // white portal with only a coloured bar barely reads as themed. Over dark it takes the bar
+    // and the accents and leaves the surfaces alone.
     public function test_a_scheme_tints_light_and_dark_differently()
     {
         $this->colorScheme('green');
@@ -233,8 +233,8 @@ class PortalThemeTest extends TestCase
         $this->baseTheme('dark');
         $dark = $this->get('/login');
 
-        $dark->assertSee('--portal-page:var(--color-emerald-950);', false);
-        $dark->assertSee('--portal-surface:var(--color-emerald-900);', false);
+        $dark->assertSee('--portal-page:var(--color-slate-900);', false);
+        $dark->assertSee('--portal-nav-surface:var(--color-emerald-950);', false);
         $dark->assertSee('--portal-accent:var(--color-emerald-400);', false);
     }
 
@@ -281,20 +281,22 @@ class PortalThemeTest extends TestCase
         $response->assertDontSee('--portal-page:var(--color-red-50);', false);
     }
 
-    // Red on dark keeps the base's neutral page and cards and turns only the bar and the accents
-    // red, which is what a null in a scheme's shade table means. Red is the only scheme that does
-    // this: a full red dark portal read as one long error message.
-    public function test_red_on_dark_leaves_the_base_background_alone()
+    // Over dark every scheme keeps the base's neutral surfaces and colours the bar, the badges
+    // and the accents only. Checked across all seven rather than one, because the rule lives in
+    // a shared table any scheme can override its way out of without anything noticing.
+    public function test_no_scheme_tints_the_dark_background()
     {
         $this->baseTheme('dark');
-        $this->colorScheme('red');
 
-        $response = $this->get('/login');
+        foreach (['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'] as $scheme) {
+            $this->colorScheme($scheme);
 
-        $response->assertSee('--portal-page:var(--color-slate-900);', false);
-        $response->assertSee('--portal-surface:var(--color-slate-800);', false);
-        $response->assertSee('--portal-nav-surface:var(--color-red-950);', false);
-        $response->assertSee('--portal-accent:color-mix(in oklab, var(--color-red-600) 82%, var(--color-slate-500));', false);
+            $response = $this->get('/login');
+
+            $response->assertSee('--portal-page:var(--color-slate-900);', false);
+            $response->assertSee('--portal-surface:var(--color-slate-800);', false);
+            $response->assertSee('--portal-border:var(--color-slate-600);', false);
+        }
     }
 
     // The accent is a button's background in some places and text on a card in others, and on a
@@ -311,17 +313,18 @@ class PortalThemeTest extends TestCase
         $response->assertSee('--portal-accent-on-surface:color-mix(in oklab, color-mix(in oklab, var(--color-red-600) 82%, var(--color-slate-500)) 62%, var(--portal-text));', false);
     }
 
-    // The other schemes are unaffected by red's departures: they still tint the page and the
-    // cards on dark, from the same table red overrides for itself.
-    public function test_the_other_schemes_still_tint_the_dark_background()
+    // The other half of the dark rule: leaving the surfaces alone must not leave the portal
+    // untinted. The bar, the badges and the accent are what carry the hue there.
+    public function test_a_scheme_still_colours_the_bar_and_the_accent_over_dark()
     {
         $this->baseTheme('dark');
         $this->colorScheme('violet');
 
         $response = $this->get('/login');
 
-        $response->assertSee('--portal-page:var(--color-violet-950);', false);
-        $response->assertSee('--portal-surface:var(--color-violet-900);', false);
+        $response->assertSee('--portal-nav-surface:var(--color-violet-950);', false);
+        $response->assertSee('--portal-badge:var(--color-violet-600);', false);
+        $response->assertSee('--portal-accent:var(--color-violet-400);', false);
     }
 
     // Every name in the documentation has to resolve to a scheme, in both directions: a rainbow
@@ -349,7 +352,8 @@ class PortalThemeTest extends TestCase
 
         $response = $this->get('/login');
 
-        $response->assertSee('--portal-page:var(--color-blue-950);', false);
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+        $response->assertSee('--portal-nav-surface:var(--color-blue-950);', false);
         $response->assertSee('--portal-accent:var(--color-rose-500);', false);
         $response->assertDontSee('--portal-accent:var(--color-blue-400);', false);
         $response->assertDontSee('--portal-accent:var(--color-sky-500);', false);

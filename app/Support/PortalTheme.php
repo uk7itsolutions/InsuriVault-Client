@@ -65,16 +65,7 @@ class PortalTheme
                     'nav-surface' => 'color-mix(in oklab, var(--color-red-900) 78%, var(--color-slate-800))',
                     'badge' => 'color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600))',
                 ],
-                'dark' => [
-                    'page' => null,
-                    'surface' => null,
-                    'surface-muted' => null,
-                    'surface-subtle' => null,
-                    'border' => null,
-                    'input-border' => null,
-                    'nav-surface' => '950',
-                    'badge' => '700',
-                ],
+                'dark' => ['badge' => '700'],
             ],
         ],
         'orange' => ['family' => 'orange', 'light' => '700', 'dark' => '400'],
@@ -102,13 +93,8 @@ class PortalTheme
         ],
 
         'dark' => [
-            'page' => '950',
-            'surface' => '900',
-            'surface-muted' => '800',
-            'surface-subtle' => '800',
-            'border' => '700',
-            'input-border' => '600',
             'badge' => '600',
+            'nav-surface' => '950',
             'nav-text-muted' => '200',
             'nav-border' => '700',
         ],
@@ -182,11 +168,15 @@ class PortalTheme
      * yellow; a true yellow is illegible as a button colour and unpleasant as a page, so yellow
      * draws from amber. They get the colour they meant rather than the one they named.
      *
-     * A scheme may also depart from the shade rule for its own hue, and red does twice. On light
-     * it is desaturated towards grey rather than merely lightened, because a bright red page and
-     * a bright red bar compete with the rose the portal says "wrong" in. On dark it leaves the
-     * page and the cards alone entirely — a null in its table means "keep what the base chose" —
-     * so the portal stays neutral dark and only the bar, the borders and the accents turn red.
+     * The two bases are tinted to different depths on purpose. Light takes the hue through the
+     * page and the borders, because a white portal with only a coloured bar barely reads as
+     * themed. Dark keeps the base's neutral surfaces and colours the bar, the badges and the
+     * accents only: a dark portal saturated throughout stops being a background and starts being
+     * the subject, and at the darkest shades the hues are hard to tell apart anyway.
+     *
+     * A scheme may still depart from the rule for its own hue, and red does: on light it is
+     * desaturated towards grey rather than merely lightened, because a bright red competes with
+     * the rose the portal says "wrong" in.
      */
     private static function schemeProperties($base)
     {
@@ -210,15 +200,7 @@ class PortalTheme
         $properties = [];
 
         foreach ($shades as $surface => $shade) {
-            if ($shade === null) {
-                continue;
-            }
-
             $properties['--portal-' . $surface] = self::schemeValue($family, $shade);
-        }
-
-        if ($base === 'dark' && !array_key_exists('nav-surface', $overrides)) {
-            $properties['--portal-nav-surface'] = self::mix(self::palette($family, '950'), 65, 'black');
         }
 
         return array_merge($properties, self::accentFamily(self::schemeValue($family, $scheme[$base])));

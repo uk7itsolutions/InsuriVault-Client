@@ -150,7 +150,7 @@ The seven are the rainbow, in order:
 
 | Name | What it suits |
 |---|---|
-| `red` | Muted and dusty rather than urgent, and the only scheme that leaves the dark background neutral. See below. |
+| `red` | Muted and dusty rather than urgent. See below for why it is not a true red. |
 | `orange` | Warm and approachable without being loud. |
 | `yellow` | Bright and optimistic. Rendered in a golden amber — see below. |
 | `green` | Calm, and the most conventional choice for anything financial. |
@@ -158,8 +158,15 @@ The seven are the rainbow, in order:
 | `indigo` | Deep blue-violet. The "true" purple of the rainbow. |
 | `violet` | The most distinctive of the seven, and the furthest from a default. |
 
-Over **light** each gives a pale tinted page with white cards and a deep bar of the same hue.
-Over **dark** each gives a deep portal throughout in that hue, with a brighter shade for actions.
+**The two bases take the colour to different depths, on purpose.**
+
+Over **light** a scheme gives a pale tinted page with white cards, tinted borders and a deep bar
+of the same hue — a white portal with only a coloured bar barely reads as themed at all.
+
+Over **dark** the page and the cards stay the base's neutral charcoal, and the colour goes into
+the bar, the badges and the buttons. A dark portal saturated throughout stops being a background
+and becomes the subject, and at the darkest shades the hues are hard to tell apart anyway.
+
 An unrecognised name leaves the base untinted, and a scheme needs no base named — on its own it
 is the light version.
 
@@ -168,13 +175,11 @@ is the light version.
 > **`yellow`** renders in a golden amber. A true screen yellow is close to unreadable as a button
 > colour and unpleasant as a page, so you get the colour you meant rather than the one you named.
 >
-> **`red`** is deliberately not a true red, and behaves differently from the other six.
-> The portal says *wrong* in red — a failed sign-in, a validation error, a failure toast — so a
-> saturated red theme would leave a client unable to tell the brand from the bad news. Over
-> **light** it is desaturated towards grey: a dusty, muted red rather than a bright one. Over
-> **dark** it leaves the page and the cards neutral and turns only the bar, the borders and the
-> buttons red, because a fully red dark portal reads as one long error message. Sign in with a
-> wrong password once to see the theme and an error together.
+> **`red`** is deliberately not a true red. The portal says *wrong* in red — a failed sign-in, a
+> validation error, a failure toast — so a saturated red theme would leave a client unable to
+> tell the brand from the bad news. It is desaturated towards grey instead: a dusty, muted red
+> rather than a bright one. Sign in with a wrong password once to see the theme and an error
+> together.
 >
 > **`indigo` and `violet`** are neighbours and deliberately both offered: indigo is the deeper,
 > bluer one, violet the brighter, pinker one. If in doubt, look at both.
@@ -191,22 +196,12 @@ you need and stop:
 ```dotenv
 PORTAL_BASE_THEME=dark
 PORTAL_COLOR_SCHEME=blue
-PORTAL_COLOR_SCHEME=blue
-PORTAL_ACCENT_COLOR=rose-500
-```
-
-That is a dark blue portal with pink actions. Set the base, look at it; add a scheme, look again;
-change one colour only if you still want to.
-
-```dotenv
-PORTAL_BASE_THEME=dark
-PORTAL_COLOR_SCHEME=blue
 PORTAL_ACCENT_COLOR=emerald-500
 ```
 
-That gives you the dark portal with green actions — not a green light portal, and not a dark
-portal that ignores your accent. Set the theme first, look at it, then change only what you want
-to move.
+That is a dark portal, blue-themed, with green actions — not a blue light portal, and not a dark
+portal that ignores your accent. Set the base, look at it; add a scheme, look again; change one
+colour only if you still want to.
 
 **What the theme does not repaint:** a document you are previewing. A PDF renders in its own frame
 and an image keeps its own background, because those are your client's files rather than part of
