@@ -294,7 +294,21 @@ class PortalThemeTest extends TestCase
         $response->assertSee('--portal-page:var(--color-slate-900);', false);
         $response->assertSee('--portal-surface:var(--color-slate-800);', false);
         $response->assertSee('--portal-nav-surface:var(--color-red-950);', false);
-        $response->assertSee('--portal-accent:var(--color-red-300);', false);
+        $response->assertSee('--portal-accent:color-mix(in oklab, var(--color-red-600) 82%, var(--color-slate-500));', false);
+    }
+
+    // The accent is a button's background in some places and text on a card in others, and on a
+    // dark portal those want opposite things: a red dark enough to carry white text cannot be
+    // read as red text on a dark card. accent-on-surface mixes towards whatever the base set as
+    // its text colour, so it darkens on light and lightens on dark from the same one accent.
+    public function test_the_accent_used_as_text_resolves_against_the_bases_own_text_colour()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('red');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent-on-surface:color-mix(in oklab, color-mix(in oklab, var(--color-red-600) 82%, var(--color-slate-500)) 62%, var(--portal-text));', false);
     }
 
     // The other schemes are unaffected by red's departures: they still tint the page and the

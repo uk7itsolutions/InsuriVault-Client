@@ -54,7 +54,7 @@ class PortalTheme
         'red' => [
             'family' => 'red',
             'light' => 'color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600))',
-            'dark' => '300',
+            'dark' => 'color-mix(in oklab, var(--color-red-600) 82%, var(--color-slate-500))',
             'shades' => [
                 'light' => [
                     'page' => 'color-mix(in oklab, var(--color-red-50) 55%, var(--color-white))',
@@ -267,6 +267,11 @@ class PortalTheme
      * bar, and the tinted panel behind an empty state. They are derived rather than settable so
      * that one colour gives a coherent family, and the tints mix towards the surface and text
      * tokens so that whichever layer set those decides what the tint lands against.
+     *
+     * accent-on-surface is the accent used as *text* on a card rather than as a button's
+     * background, and it exists because those two want opposite things on a dark portal: a red
+     * dark enough to carry white text is unreadable as red text on a dark card. Mixing towards
+     * the text colour resolves it in whichever direction the base needs.
      */
     private static function accentFamily($accent)
     {
@@ -279,6 +284,7 @@ class PortalTheme
             '--portal-accent-surface' => self::mix($accent, 12, 'var(--portal-surface)'),
             '--portal-accent-border' => self::mix($accent, 35, 'var(--portal-surface)'),
             '--portal-accent-text' => self::mix($accent, 35, 'var(--portal-text)'),
+            '--portal-accent-on-surface' => self::mix($accent, 62, 'var(--portal-text)'),
         ];
     }
 

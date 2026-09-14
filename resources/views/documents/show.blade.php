@@ -3,7 +3,7 @@
 @section('content')
 <nav aria-label="breadcrumb">
     <ol class="mb-4 flex flex-wrap items-center gap-2 text-sm text-[var(--portal-text-subtle)]">
-        <li><a class="text-[var(--portal-accent)] no-underline transition hover:underline" href="{{ route('documents.index') }}">Documents</a></li>
+        <li><a class="text-[var(--portal-accent-on-surface)] no-underline transition hover:underline" href="{{ route('documents.index') }}">Documents</a></li>
         <li aria-hidden="true">/</li>
         <li class="text-[var(--portal-text)]" aria-current="page">{{ $fileInfo['originalFileName'] }}</li>
     </ol>

@@ -50,7 +50,7 @@
                                 <td class="hidden px-4 py-3 lg:table-cell">{{ \Carbon\Carbon::parse($file['uploadedAtUtc'])->format('Y-m-d H:i') }}</td>
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
                                     <a href="{{ route('documents.show', [$accountEntry['account']['id'], $file['fileId']]) }}"
-                                       class="inline-flex items-center gap-1 rounded-md border-[1px] border-[var(--portal-accent)] px-2 py-1 text-xs font-medium text-[var(--portal-accent)] no-underline transition hover:bg-[var(--portal-accent)] hover:text-white"
+                                       class="inline-flex items-center gap-1 rounded-md border-[1px] border-[var(--portal-accent-on-surface)] px-2 py-1 text-xs font-medium text-[var(--portal-accent-on-surface)] no-underline transition hover:bg-[var(--portal-accent)] hover:text-white"
                                        title="View">
                                         <x-icon.eye class="h-4 w-4"/> <span class="hidden sm:inline">View</span>
                                     </a>
