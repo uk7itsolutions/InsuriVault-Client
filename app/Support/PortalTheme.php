@@ -6,6 +6,8 @@ class PortalTheme
 {
     private const DEFAULT_PORTAL_NAME = 'InsuriVault';
 
+    private const DEFAULT_BASE = 'light';
+
     private const TAILWIND_COLOR_FAMILIES = [
         'slate', 'gray', 'zinc', 'neutral', 'stone', 'red', 'orange', 'amber', 'yellow', 'lime',
         'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia',
@@ -16,36 +18,42 @@ class PortalTheme
         '50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950',
     ];
 
-    private const BASE_THEMES = [
+    private const BASES = [
 
-        'light' => [],
+        'light' => [
+            'surfaces' => [],
+            'accent' => null,
+        ],
 
         'dark' => [
-            '--portal-page' => 'var(--color-slate-900)',
-            '--portal-surface' => 'var(--color-slate-800)',
-            '--portal-surface-muted' => 'var(--color-slate-700)',
-            '--portal-surface-subtle' => 'var(--color-slate-700)',
-            '--portal-text' => 'var(--color-slate-50)',
-            '--portal-text-muted' => 'var(--color-slate-300)',
-            '--portal-text-soft' => 'var(--color-slate-300)',
-            '--portal-text-subtle' => 'var(--color-slate-400)',
-            '--portal-border' => 'var(--color-slate-600)',
-            '--portal-input-border' => 'var(--color-slate-500)',
-            '--portal-badge' => 'var(--color-slate-500)',
-            '--portal-badge-text' => 'var(--color-slate-50)',
-            '--portal-nav-surface' => 'var(--color-slate-950)',
-            '--portal-nav-text' => 'var(--color-slate-50)',
-            '--portal-nav-text-muted' => 'var(--color-slate-400)',
-            '--portal-nav-border' => 'var(--color-slate-600)',
-            '--portal-accent' => 'var(--color-sky-500)',
-            '--portal-accent-hover' => 'var(--color-sky-400)',
-            '--portal-accent-ring' => 'var(--color-sky-400)',
-            '--portal-accent-bright' => 'var(--color-sky-400)',
-            '--portal-accent-bright-text' => 'var(--color-sky-300)',
-            '--portal-accent-surface' => 'color-mix(in oklab, var(--color-sky-500) 18%, var(--color-slate-800))',
-            '--portal-accent-border' => 'color-mix(in oklab, var(--color-sky-500) 45%, var(--color-slate-800))',
-            '--portal-accent-text' => 'var(--color-sky-100)',
+            'surfaces' => [
+                '--portal-page' => 'var(--color-slate-900)',
+                '--portal-surface' => 'var(--color-slate-800)',
+                '--portal-surface-muted' => 'var(--color-slate-700)',
+                '--portal-surface-subtle' => 'var(--color-slate-700)',
+                '--portal-text' => 'var(--color-slate-50)',
+                '--portal-text-muted' => 'var(--color-slate-300)',
+                '--portal-text-soft' => 'var(--color-slate-300)',
+                '--portal-text-subtle' => 'var(--color-slate-400)',
+                '--portal-border' => 'var(--color-slate-600)',
+                '--portal-input-border' => 'var(--color-slate-500)',
+                '--portal-badge' => 'var(--color-slate-500)',
+                '--portal-badge-text' => 'var(--color-slate-50)',
+                '--portal-nav-surface' => 'var(--color-slate-950)',
+                '--portal-nav-text' => 'var(--color-slate-50)',
+                '--portal-nav-text-muted' => 'var(--color-slate-400)',
+                '--portal-nav-border' => 'var(--color-slate-600)',
+            ],
+            'accent' => 'var(--color-sky-500)',
         ],
+
+    ];
+
+    private const SCHEMES = [
+
+        'blue' => ['family' => 'blue', 'light' => '700', 'dark' => '400'],
+        'green' => ['family' => 'emerald', 'light' => '700', 'dark' => '400'],
+        'purple' => ['family' => 'purple', 'light' => '700', 'dark' => '400'],
 
     ];
 
@@ -61,27 +69,60 @@ class PortalTheme
     }
 
     /**
-     * The custom properties the layout writes: the chosen base theme's values first, then the
-     * operator's own colours over the top, so a base theme is a starting point rather than a
-     * choice between it and the settings. A property is absent whenever nothing has claimed it,
-     * which leaves the stylesheet's own default standing — and a value that is not a colour never
-     * reaches the document.
+     * The custom properties the layout writes, in the order they are meant to win: the base, then
+     * the colour scheme tinting it, then the operator's own colours over both. A property is
+     * absent whenever no layer claimed it, which leaves the stylesheet's own default standing —
+     * and a value that is not a colour never reaches the document.
      */
     public static function customProperties()
     {
-        return array_merge(self::baseThemeProperties(), self::operatorProperties());
+        $base = self::baseName();
+
+        return array_merge(
+            self::baseProperties($base),
+            self::schemeProperties($base),
+            self::operatorProperties()
+        );
     }
 
     /**
-     * The values of the named base, or nothing at all when none is named or the name is not one
-     * that exists. Light is the portal as it ships and so claims no properties — it is spelled out
-     * rather than left implicit so that an operator can state the choice, and so that a colour
-     * scheme has a mode to be applied to. An unrecognised name leaves the portal as it ships
-     * rather than failing, for the same reason an unrecognised colour does.
+     * The base an operator chose, or light when they chose nothing or named something that does
+     * not exist. Light is a real base rather than an absence: a scheme has to know which one it is
+     * tinting, and the two read very differently.
      */
-    private static function baseThemeProperties()
+    private static function baseName()
     {
         $name = config('portal.base_theme');
+
+        if (!is_string($name)) {
+            return self::DEFAULT_BASE;
+        }
+
+        $name = strtolower(trim($name));
+
+        return array_key_exists($name, self::BASES) ? $name : self::DEFAULT_BASE;
+    }
+
+    private static function baseProperties($base)
+    {
+        $definition = self::BASES[$base];
+
+        if ($definition['accent'] === null) {
+            return $definition['surfaces'];
+        }
+
+        return array_merge($definition['surfaces'], self::accentFamily($definition['accent']));
+    }
+
+    /**
+     * A scheme tints the base rather than replacing it: the surfaces keep the base's weight and
+     * take the scheme's hue, so green over light is a pale green page and green over dark is a
+     * deep one. The shades are chosen per base for that reason — a tint that reads over white is
+     * not the one that reads over near-black.
+     */
+    private static function schemeProperties($base)
+    {
+        $name = config('portal.color_scheme');
 
         if (!is_string($name)) {
             return [];
@@ -89,11 +130,40 @@ class PortalTheme
 
         $name = strtolower(trim($name));
 
-        if (!array_key_exists($name, self::BASE_THEMES)) {
+        if (!array_key_exists($name, self::SCHEMES)) {
             return [];
         }
 
-        return self::BASE_THEMES[$name];
+        $family = self::SCHEMES[$name]['family'];
+        $accent = self::palette($family, self::SCHEMES[$name][$base]);
+
+        if ($base === 'dark') {
+            return array_merge([
+                '--portal-page' => self::palette($family, '950'),
+                '--portal-surface' => self::palette($family, '900'),
+                '--portal-surface-muted' => self::palette($family, '800'),
+                '--portal-surface-subtle' => self::palette($family, '800'),
+                '--portal-border' => self::palette($family, '700'),
+                '--portal-input-border' => self::palette($family, '600'),
+                '--portal-badge' => self::palette($family, '600'),
+                '--portal-nav-surface' => self::mix(self::palette($family, '950'), 65, 'black'),
+                '--portal-nav-text-muted' => self::palette($family, '200'),
+                '--portal-nav-border' => self::palette($family, '700'),
+            ], self::accentFamily($accent));
+        }
+
+        return array_merge([
+            '--portal-page' => self::palette($family, '50'),
+            '--portal-surface-muted' => self::palette($family, '100'),
+            '--portal-surface-subtle' => self::palette($family, '50'),
+            '--portal-border' => self::palette($family, '200'),
+            '--portal-input-border' => self::palette($family, '300'),
+            '--portal-badge' => self::palette($family, '700'),
+            '--portal-nav-surface' => self::palette($family, '900'),
+            '--portal-nav-text' => self::palette($family, '50'),
+            '--portal-nav-text-muted' => self::palette($family, '200'),
+            '--portal-nav-border' => self::palette($family, '700'),
+        ], self::accentFamily($accent));
     }
 
     private static function operatorProperties()
@@ -117,17 +187,30 @@ class PortalTheme
         $accent = self::resolveColor(config('portal.theme.accent_color'));
 
         if ($accent !== null) {
-            $properties['--portal-accent'] = $accent;
-            $properties['--portal-accent-hover'] = self::mix($accent, 88, 'black');
-            $properties['--portal-accent-ring'] = self::mix($accent, 85, 'white');
-            $properties['--portal-accent-bright'] = self::mix($accent, 62, 'white');
-            $properties['--portal-accent-bright-text'] = self::mix($accent, 48, 'white');
-            $properties['--portal-accent-surface'] = self::mix($accent, 12, 'var(--portal-surface)');
-            $properties['--portal-accent-border'] = self::mix($accent, 35, 'var(--portal-surface)');
-            $properties['--portal-accent-text'] = self::mix($accent, 35, 'var(--portal-text)');
+            $properties = array_merge($properties, self::accentFamily($accent));
         }
 
         return $properties;
+    }
+
+    /**
+     * The shades that hang off one accent — its hover, its focus ring, the pair used on the dark
+     * bar, and the tinted panel behind an empty state. They are derived rather than settable so
+     * that one colour gives a coherent family, and the tints mix towards the surface and text
+     * tokens so that whichever layer set those decides what the tint lands against.
+     */
+    private static function accentFamily($accent)
+    {
+        return [
+            '--portal-accent' => $accent,
+            '--portal-accent-hover' => self::mix($accent, 88, 'black'),
+            '--portal-accent-ring' => self::mix($accent, 85, 'white'),
+            '--portal-accent-bright' => self::mix($accent, 62, 'white'),
+            '--portal-accent-bright-text' => self::mix($accent, 48, 'white'),
+            '--portal-accent-surface' => self::mix($accent, 12, 'var(--portal-surface)'),
+            '--portal-accent-border' => self::mix($accent, 35, 'var(--portal-surface)'),
+            '--portal-accent-text' => self::mix($accent, 35, 'var(--portal-text)'),
+        ];
     }
 
     /**
@@ -170,6 +253,11 @@ class PortalTheme
             return null;
         }
 
+        return sprintf('var(--color-%s-%s)', $family, $shade);
+    }
+
+    private static function palette($family, $shade)
+    {
         return sprintf('var(--color-%s-%s)', $family, $shade);
     }
 

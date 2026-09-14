@@ -14,6 +14,7 @@ class PortalThemeTest extends TestCase
         parent::setUp();
 
         $this->baseTheme(null);
+        $this->colorScheme(null);
         $this->theme([]);
     }
 
@@ -29,6 +30,11 @@ class PortalThemeTest extends TestCase
     private function baseTheme($name): void
     {
         config(['portal.base_theme' => $name]);
+    }
+
+    private function colorScheme($name): void
+    {
+        config(['portal.color_scheme' => $name]);
     }
 
     // The case every new operator hits: a blank .env must leave the portal exactly as it shipped.
@@ -209,6 +215,77 @@ class PortalThemeTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertDontSee('<style>', false);
+    }
+
+    // The same scheme has to mean something different on each base, which is the whole reason it
+    // is a layer rather than a fourth base: over light it is a pale page with a deep bar, over
+    // dark it is a deep page throughout. A scheme that emitted one set of values for both would
+    // read correctly on whichever base its author happened to be looking at.
+    public function test_a_scheme_tints_light_and_dark_differently()
+    {
+        $this->colorScheme('green');
+        $light = $this->get('/login');
+
+        $light->assertSee('--portal-page:var(--color-emerald-50);', false);
+        $light->assertSee('--portal-nav-surface:var(--color-emerald-900);', false);
+        $light->assertSee('--portal-accent:var(--color-emerald-700);', false);
+
+        $this->baseTheme('dark');
+        $dark = $this->get('/login');
+
+        $dark->assertSee('--portal-page:var(--color-emerald-950);', false);
+        $dark->assertSee('--portal-surface:var(--color-emerald-900);', false);
+        $dark->assertSee('--portal-accent:var(--color-emerald-400);', false);
+    }
+
+    // A scheme has to reach past the accent, or it is a name for something one setting already
+    // did. These are the surfaces that make it a design rather than a tinted button.
+    public function test_a_scheme_reaches_the_surfaces_and_not_only_the_accent()
+    {
+        $this->colorScheme('purple');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-surface-muted:var(--color-purple-100);', false);
+        $response->assertSee('--portal-border:var(--color-purple-200);', false);
+        $response->assertSee('--portal-badge:var(--color-purple-700);', false);
+    }
+
+    // The stack, top to bottom, in one assertion: a dark base tinted blue, with the operator's own
+    // accent over both. Each layer keeps what the next one did not claim.
+    public function test_the_three_layers_stack_in_order()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('blue');
+        $this->theme(['accent_color' => 'rose-500']);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-blue-950);', false);
+        $response->assertSee('--portal-accent:var(--color-rose-500);', false);
+        $response->assertDontSee('--portal-accent:var(--color-blue-400);', false);
+        $response->assertDontSee('--portal-accent:var(--color-sky-500);', false);
+    }
+
+    public function test_an_unknown_scheme_leaves_the_base_untinted()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('turquoise');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+        $response->assertDontSee('emerald', false);
+    }
+
+    public function test_a_scheme_on_its_own_needs_no_base_to_be_named()
+    {
+        $this->colorScheme('green');
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('--portal-page:var(--color-emerald-50);', false);
     }
 
     public function test_each_setting_is_independent_of_the_others()

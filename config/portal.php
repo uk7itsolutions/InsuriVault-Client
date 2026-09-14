@@ -37,6 +37,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Colour Scheme
+    |--------------------------------------------------------------------------
+    |
+    | A hue laid over the base: the surfaces keep the base's weight and take the
+    | scheme's colour, so green over light is a pale green portal and green over
+    | dark is a deep one. The individual colours below are written after it and
+    | win. An unrecognised name leaves the base untinted.
+    |
+    */
+
+    'color_scheme' => env('PORTAL_COLOR_SCHEME'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Theme
     |--------------------------------------------------------------------------
     |

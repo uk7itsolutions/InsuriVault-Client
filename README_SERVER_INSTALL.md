@@ -112,6 +112,7 @@ edit a view, and you never need Node or a build step on the server. Edit the fil
 ORGANIZATION_DISPLAY_NAME="Acme Insurance"
 
 PORTAL_BASE_THEME=dark
+PORTAL_COLOR_SCHEME=blue
 
 PORTAL_NAVIGATION_BACKGROUND_COLOR="#111827"
 PORTAL_NAVIGATION_TEXT_COLOR="#f9fafb"
@@ -121,7 +122,8 @@ PORTAL_ACCENT_COLOR=indigo-700
 | Setting | What it changes | Default |
 |---|---|---|
 | `ORGANIZATION_DISPLAY_NAME` | The name in the navigation bar and the browser tab. It is also the name shown to a client when sign-in fails and they need to know who to contact. | `InsuriVault` |
-| `PORTAL_BASE_THEME` | A complete design to start from. See **Base themes** below. | the light theme the portal ships with |
+| `PORTAL_BASE_THEME` | Whether the portal is light or dark. See **Base theme** below. | `light` |
+| `PORTAL_COLOR_SCHEME` | A hue laid over the base. See **Colour schemes** below. | none — the base untinted |
 | `PORTAL_NAVIGATION_BACKGROUND_COLOR` | The navigation bar's background. | `slate-900` |
 | `PORTAL_NAVIGATION_TEXT_COLOR` | The navigation bar's text, and the muted tone used for the Logout link and the menu button. | `slate-50` |
 | `PORTAL_ACCENT_COLOR` | The login header band, the Login button, the View button, links, and focus outlines on the login form. | `sky-700` |
@@ -138,16 +140,43 @@ page, the cards, the borders, the text tones and the accent all move together.
 
 An unrecognised name is ignored and you get the light portal.
 
-**Settings stack, in three layers.** The base is the bottom of them:
+### Colour schemes
 
-1. **The base theme** — light or dark. Decides every surface.
-2. **A colour scheme** — tints that base. *(Coming: blue, green and purple, each working on either base.)*
+`PORTAL_COLOR_SCHEME` lays a hue over the base. The surfaces keep the base's weight and take the
+scheme's colour, so the same name means something different on each base — which is the point of
+it being a separate setting rather than another theme name.
+
+| Name | Over `light` | Over `dark` |
+|---|---|---|
+| `blue` | A pale blue page with white cards and a deep blue bar. The most conservative of the three. | A deep blue portal throughout, with a brighter blue for actions. |
+| `green` | A pale green page with white cards and a deep green bar. Reads as calm and financial. | A deep green portal — the darkest-feeling of the three. |
+| `purple` | A pale violet page with white cards and a deep purple bar. The most distinctive. | A deep purple portal, still with plenty of contrast on text. |
+
+An unrecognised name leaves the base untinted. A scheme needs no base named — on its own it is the
+light version.
+
+### How the three layers stack
+
+1. **`PORTAL_BASE_THEME`** — light or dark. Decides every surface.
+2. **`PORTAL_COLOR_SCHEME`** — tints that base.
 3. **The individual colours below** — written last, and they win over both.
 
-That is what makes the base a starting point rather than a choice you have to live with:
+Each layer only changes what the one above it leaves alone, so you can go as far down the list as
+you need and stop:
 
 ```dotenv
 PORTAL_BASE_THEME=dark
+PORTAL_COLOR_SCHEME=blue
+PORTAL_COLOR_SCHEME=blue
+PORTAL_ACCENT_COLOR=rose-500
+```
+
+That is a dark blue portal with pink actions. Set the base, look at it; add a scheme, look again;
+change one colour only if you still want to.
+
+```dotenv
+PORTAL_BASE_THEME=dark
+PORTAL_COLOR_SCHEME=blue
 PORTAL_ACCENT_COLOR=emerald-500
 ```
 
