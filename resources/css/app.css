@@ -38,6 +38,7 @@
     --portal-accent-border: var(--color-sky-200);
     --portal-accent-text: var(--color-sky-900);
     --portal-accent-on-surface: var(--color-sky-700);
+    --portal-accent-contrast: var(--color-white);
 }
 
 @utility page-container {

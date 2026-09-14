@@ -226,8 +226,8 @@ class PortalThemeTest extends TestCase
         $this->colorScheme('green');
         $light = $this->get('/login');
 
-        $light->assertSee('--portal-page:var(--color-emerald-50);', false);
-        $light->assertSee('--portal-nav-surface:var(--color-emerald-900);', false);
+        $light->assertSee('--portal-page:color-mix(in oklab, var(--color-emerald-50) 45%, var(--color-white));', false);
+        $light->assertSee('--portal-nav-surface:var(--color-emerald-800);', false);
         $light->assertSee('--portal-accent:var(--color-emerald-700);', false);
 
         $this->baseTheme('dark');
@@ -246,8 +246,8 @@ class PortalThemeTest extends TestCase
 
         $response = $this->get('/login');
 
-        $response->assertSee('--portal-surface-muted:var(--color-indigo-100);', false);
-        $response->assertSee('--portal-border:var(--color-indigo-200);', false);
+        $response->assertSee('--portal-surface-muted:color-mix(in oklab, var(--color-indigo-100) 60%, var(--color-white));', false);
+        $response->assertSee('--portal-border:color-mix(in oklab, var(--color-indigo-200) 75%, var(--color-white));', false);
         $response->assertSee('--portal-badge:var(--color-indigo-700);', false);
     }
 
@@ -261,8 +261,8 @@ class PortalThemeTest extends TestCase
 
         $response = $this->get('/login');
 
-        $response->assertSee('--portal-page:var(--color-amber-50);', false);
-        $response->assertSee('--portal-accent:var(--color-amber-700);', false);
+        $response->assertSee('--portal-page:color-mix(in oklab, var(--color-amber-50) 45%, var(--color-white));', false);
+        $response->assertSee('--portal-accent:var(--color-amber-400);', false);
         $response->assertDontSee('--color-yellow-', false);
     }
 
@@ -377,7 +377,7 @@ class PortalThemeTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
-        $response->assertSee('--portal-page:var(--color-emerald-50);', false);
+        $response->assertSee('--portal-page:color-mix(in oklab, var(--color-emerald-50) 45%, var(--color-white));', false);
     }
 
     public function test_each_setting_is_independent_of_the_others()

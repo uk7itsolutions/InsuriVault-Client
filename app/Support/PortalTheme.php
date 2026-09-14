@@ -49,6 +49,22 @@ class PortalTheme
 
     ];
 
+    /**
+     * Orange and yellow need the same departures, on both bases. Their deep shades are brown
+     * rather than orange, so the bar is taken from the bright end of the palette instead, and
+     * everything that then sits on a bright warm ground takes near-black text — white on amber
+     * is unreadable, which is the same reason yellow draws from amber in the first place.
+     */
+    private const WARM_SURFACES = [
+        'nav-surface' => '600',
+        'nav-text' => '950',
+        'nav-text-muted' => '900',
+        'nav-border' => '700',
+        'badge' => '400',
+        'badge-text' => '950',
+        'accent-contrast' => '950',
+    ];
+
     private const SCHEMES = [
 
         'red' => [
@@ -68,8 +84,24 @@ class PortalTheme
                 'dark' => ['badge' => '700'],
             ],
         ],
-        'orange' => ['family' => 'orange', 'light' => '700', 'dark' => '400'],
-        'yellow' => ['family' => 'amber', 'light' => '700', 'dark' => '300'],
+        'orange' => [
+            'family' => 'orange',
+            'light' => '500',
+            'dark' => '400',
+            'shades' => [
+                'light' => self::WARM_SURFACES,
+                'dark' => self::WARM_SURFACES,
+            ],
+        ],
+        'yellow' => [
+            'family' => 'amber',
+            'light' => '400',
+            'dark' => '400',
+            'shades' => [
+                'light' => self::WARM_SURFACES,
+                'dark' => self::WARM_SURFACES,
+            ],
+        ],
         'green' => ['family' => 'emerald', 'light' => '700', 'dark' => '400'],
         'blue' => ['family' => 'blue', 'light' => '700', 'dark' => '400'],
         'indigo' => ['family' => 'indigo', 'light' => '700', 'dark' => '400'],
@@ -80,16 +112,16 @@ class PortalTheme
     private const SCHEME_SHADES = [
 
         'light' => [
-            'page' => '50',
-            'surface-muted' => '100',
-            'surface-subtle' => '50',
-            'border' => '200',
+            'page' => 'color-mix(in oklab, {50} 45%, var(--color-white))',
+            'surface-muted' => 'color-mix(in oklab, {100} 60%, var(--color-white))',
+            'surface-subtle' => 'color-mix(in oklab, {50} 45%, var(--color-white))',
+            'border' => 'color-mix(in oklab, {200} 75%, var(--color-white))',
             'input-border' => '300',
             'badge' => '700',
-            'nav-surface' => '900',
+            'nav-surface' => '800',
             'nav-text' => '50',
             'nav-text-muted' => '200',
-            'nav-border' => '700',
+            'nav-border' => '600',
         ],
 
         'dark' => [
@@ -208,13 +240,24 @@ class PortalTheme
 
     /**
      * A scheme names a shade of its own palette for most surfaces, which keeps the table readable.
-     * Where a hue needs a colour the palette does not hold — a red desaturated towards grey so it
-     * stops competing with the portal's error messages — it states the value outright instead. A
-     * number means a shade; anything else is already a colour.
+     * Where a hue needs a colour the palette does not hold — a page washed almost to white, or a
+     * red desaturated towards grey so it stops competing with the portal's error messages — it
+     * states the value outright instead, writing {50} for a shade of its own family. A number
+     * means a shade; anything else is a colour, with those braces filled in.
      */
     private static function schemeValue($family, $shade)
     {
-        return ctype_digit($shade) ? self::palette($family, $shade) : $shade;
+        if (ctype_digit($shade)) {
+            return self::palette($family, $shade);
+        }
+
+        return preg_replace_callback(
+            '/\{([0-9]{2,3})\}/',
+            function ($match) use ($family) {
+                return self::palette($family, $match[1]);
+            },
+            $shade
+        );
     }
 
     private static function operatorProperties()

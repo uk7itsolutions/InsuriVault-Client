@@ -4,7 +4,7 @@
 <div class="mx-auto w-full max-w-md">
     <div class="overflow-hidden rounded-lg bg-[var(--portal-surface)] shadow-lg">
         <div class="bg-[var(--portal-accent)] px-6 py-4">
-            <h4 class="text-2xl font-semibold text-white">Login</h4>
+            <h4 class="text-2xl font-semibold text-[var(--portal-accent-contrast)]">Login</h4>
         </div>
         <div class="p-6">
             @if($errors->any())
@@ -34,7 +34,7 @@
                 </div>
                 <div class="grid gap-2">
                     <button type="submit"
-                            class="w-full rounded-md bg-[var(--portal-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--portal-accent-hover)] disabled:opacity-60">Login</button>
+                            class="w-full rounded-md bg-[var(--portal-accent)] px-4 py-2 text-sm font-medium text-[var(--portal-accent-contrast)] transition hover:bg-[var(--portal-accent-hover)] disabled:opacity-60">Login</button>
                     <button type="button" id="biometricLoginBtn"
                             class="hidden w-full items-center justify-center rounded-md border-[1px] border-[var(--portal-input-border)] px-4 py-2 text-sm font-medium text-[var(--portal-text-muted)] transition hover:bg-[var(--portal-surface-muted)] disabled:opacity-60">
                         <x-icon.fingerprint class="mr-1 h-4 w-4"/>Login with Biometrics
