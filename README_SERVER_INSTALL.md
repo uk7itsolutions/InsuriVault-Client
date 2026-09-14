@@ -102,6 +102,56 @@ Once the installation is complete, the application will be ready to use. Navigat
 
 ---
 
+## Branding the Portal
+
+The portal carries your organisation's name and colours. All of it is set in `.env` — you never
+edit a view, and you never need Node or a build step on the server. Edit the file, then run
+`php artisan config:clear` if you have cached your config, and reload the page.
+
+```dotenv
+ORGANIZATION_DISPLAY_NAME="Acme Insurance"
+
+PORTAL_NAVIGATION_BACKGROUND_COLOR=#111827
+PORTAL_NAVIGATION_TEXT_COLOR=#f9fafb
+PORTAL_ACCENT_COLOR=indigo-700
+```
+
+| Setting | What it changes | Default |
+|---|---|---|
+| `ORGANIZATION_DISPLAY_NAME` | The name in the navigation bar and the browser tab. It is also the name shown to a client when sign-in fails and they need to know who to contact. | `InsuriVault` |
+| `PORTAL_NAVIGATION_BACKGROUND_COLOR` | The navigation bar's background. | `slate-900` |
+| `PORTAL_NAVIGATION_TEXT_COLOR` | The navigation bar's text, and the muted tone used for the Logout link and the menu button. | `slate-50` |
+| `PORTAL_ACCENT_COLOR` | The login header band, the Login button, the View button, links, and focus outlines on the login form. | `sky-700` |
+
+### Writing a colour
+
+A colour is either:
+
+- **A hex value** — `#0f172b` or the short form `#eee`.
+- **A standard Tailwind colour name** — a family and a shade, such as `slate-900`, `indigo-700` or
+  `rose-500`. Shades run `50`, `100`, `200` … `900`, `950`. `black` and `white` also work.
+  The families are `slate`, `gray`, `zinc`, `neutral`, `stone`, `red`, `orange`, `amber`, `yellow`,
+  `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `purple`,
+  `fuchsia`, `pink` and `rose`.
+
+**Anything else is ignored and the default is used.** A typo will not break the page and will not
+show your text on screen — but it will also not tell you it was wrong, so if a colour does not
+change, check the spelling first.
+
+### Two things worth knowing
+
+**The two navigation colours travel together.** Setting a pale background without also setting a
+dark text colour gives you a bar you cannot read. The portal does not second-guess your choice —
+if it corrected you, the colour you set would not be the colour you got. Set both, and look at the
+result.
+
+**One accent, several places.** `PORTAL_ACCENT_COLOR` is deliberately a single setting: the shades
+around it — the button's hover state, the focus ring, the tinted panel on the documents page — are
+derived from it so they stay in the same family. The Download buttons stay green on purpose; they
+signal an action rather than your brand.
+
+---
+
 ## Special Instructions for Plesk Obsidian
 
 ### Setting the Document Root for a Subdomain
