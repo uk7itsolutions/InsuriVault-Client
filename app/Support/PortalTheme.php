@@ -51,13 +51,58 @@ class PortalTheme
 
     private const SCHEMES = [
 
-        'red' => ['family' => 'red', 'light' => '700', 'dark' => '400'],
+        'red' => [
+            'family' => 'red',
+            'light' => '600',
+            'dark' => '300',
+            'shades' => [
+                'light' => ['nav-surface' => '700', 'badge' => '600'],
+                'dark' => [
+                    'page' => '900',
+                    'surface' => '800',
+                    'surface-muted' => '700',
+                    'surface-subtle' => '700',
+                    'border' => '600',
+                    'input-border' => '500',
+                    'nav-surface' => '950',
+                ],
+            ],
+        ],
         'orange' => ['family' => 'orange', 'light' => '700', 'dark' => '400'],
         'yellow' => ['family' => 'amber', 'light' => '700', 'dark' => '300'],
         'green' => ['family' => 'emerald', 'light' => '700', 'dark' => '400'],
         'blue' => ['family' => 'blue', 'light' => '700', 'dark' => '400'],
         'indigo' => ['family' => 'indigo', 'light' => '700', 'dark' => '400'],
         'violet' => ['family' => 'violet', 'light' => '700', 'dark' => '400'],
+
+    ];
+
+    private const SCHEME_SHADES = [
+
+        'light' => [
+            'page' => '50',
+            'surface-muted' => '100',
+            'surface-subtle' => '50',
+            'border' => '200',
+            'input-border' => '300',
+            'badge' => '700',
+            'nav-surface' => '900',
+            'nav-text' => '50',
+            'nav-text-muted' => '200',
+            'nav-border' => '700',
+        ],
+
+        'dark' => [
+            'page' => '950',
+            'surface' => '900',
+            'surface-muted' => '800',
+            'surface-subtle' => '800',
+            'border' => '700',
+            'input-border' => '600',
+            'badge' => '600',
+            'nav-text-muted' => '200',
+            'nav-border' => '700',
+        ],
 
     ];
 
@@ -127,6 +172,10 @@ class PortalTheme
      * A scheme's name and the palette it draws from are separate on purpose. An operator asks for
      * yellow; a true yellow is illegible as a button colour and unpleasant as a page, so yellow
      * draws from amber. They get the colour they meant rather than the one they named.
+     *
+     * A scheme may also soften the shade rule for its own hue. Red does: the portal says "wrong"
+     * in rose, so a saturated red theme would be the same colour as its own error messages. Red
+     * sits a step or two lighter throughout, which leaves the errors the loudest red on screen.
      */
     private static function schemeProperties($base)
     {
@@ -142,36 +191,21 @@ class PortalTheme
             return [];
         }
 
-        $family = self::SCHEMES[$name]['family'];
-        $accent = self::palette($family, self::SCHEMES[$name][$base]);
+        $scheme = self::SCHEMES[$name];
+        $family = $scheme['family'];
+        $shades = array_merge(self::SCHEME_SHADES[$base], isset($scheme['shades'][$base]) ? $scheme['shades'][$base] : []);
 
-        if ($base === 'dark') {
-            return array_merge([
-                '--portal-page' => self::palette($family, '950'),
-                '--portal-surface' => self::palette($family, '900'),
-                '--portal-surface-muted' => self::palette($family, '800'),
-                '--portal-surface-subtle' => self::palette($family, '800'),
-                '--portal-border' => self::palette($family, '700'),
-                '--portal-input-border' => self::palette($family, '600'),
-                '--portal-badge' => self::palette($family, '600'),
-                '--portal-nav-surface' => self::mix(self::palette($family, '950'), 65, 'black'),
-                '--portal-nav-text-muted' => self::palette($family, '200'),
-                '--portal-nav-border' => self::palette($family, '700'),
-            ], self::accentFamily($accent));
+        $properties = [];
+
+        foreach ($shades as $surface => $shade) {
+            $properties['--portal-' . $surface] = self::palette($family, $shade);
         }
 
-        return array_merge([
-            '--portal-page' => self::palette($family, '50'),
-            '--portal-surface-muted' => self::palette($family, '100'),
-            '--portal-surface-subtle' => self::palette($family, '50'),
-            '--portal-border' => self::palette($family, '200'),
-            '--portal-input-border' => self::palette($family, '300'),
-            '--portal-badge' => self::palette($family, '700'),
-            '--portal-nav-surface' => self::palette($family, '900'),
-            '--portal-nav-text' => self::palette($family, '50'),
-            '--portal-nav-text-muted' => self::palette($family, '200'),
-            '--portal-nav-border' => self::palette($family, '700'),
-        ], self::accentFamily($accent));
+        if ($base === 'dark' && !isset($scheme['shades'][$base]['nav-surface'])) {
+            $properties['--portal-nav-surface'] = self::mix(self::palette($family, '950'), 65, 'black');
+        }
+
+        return array_merge($properties, self::accentFamily(self::palette($family, $scheme[$base])));
     }
 
     private static function operatorProperties()

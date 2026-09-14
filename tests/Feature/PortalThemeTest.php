@@ -266,6 +266,25 @@ class PortalThemeTest extends TestCase
         $response->assertDontSee('--color-yellow-', false);
     }
 
+    // The portal says "wrong" in rose — the login alert and the failure toast. A saturated red
+    // theme would dress the brand in the same colour as its own error messages, so red sits a
+    // step or two lighter than the shade rule the other six follow. The errors stay the loudest
+    // red on the screen, which is the only way a client can still tell them apart at a glance.
+    public function test_red_is_softened_so_the_errors_stay_louder_than_the_theme()
+    {
+        $this->colorScheme('red');
+        $light = $this->get('/login');
+
+        $light->assertSee('--portal-accent:var(--color-red-600);', false);
+        $light->assertSee('--portal-nav-surface:var(--color-red-700);', false);
+
+        $this->baseTheme('dark');
+        $dark = $this->get('/login');
+
+        $dark->assertSee('--portal-page:var(--color-red-900);', false);
+        $dark->assertSee('--portal-accent:var(--color-red-300);', false);
+    }
+
     // Every name in the documentation has to resolve to a scheme, in both directions: a rainbow
     // with a hole in it is worse than a shorter list, and a scheme nobody documented is one an
     // operator will never find.

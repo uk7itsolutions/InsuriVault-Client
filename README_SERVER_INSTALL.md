@@ -150,7 +150,7 @@ The seven are the rainbow, in order:
 
 | Name | What it suits |
 |---|---|
-| `red` | Bold and urgent. See the warning below before choosing it. |
+| `red` | Warm and soft rather than urgent — a muted, dusty red. See below for why it is not a true red. |
 | `orange` | Warm and approachable without being loud. |
 | `yellow` | Bright and optimistic. Rendered in a golden amber — see below. |
 | `green` | Calm, and the most conventional choice for anything financial. |
@@ -163,16 +163,20 @@ Over **dark** each gives a deep portal throughout in that hue, with a brighter s
 An unrecognised name leaves the base untinted, and a scheme needs no base named — on its own it
 is the light version.
 
-> **Two of these are not the literal colour, on purpose.**
+> **Three of these are not the literal colour, on purpose.**
+>
 > **`yellow`** renders in a golden amber. A true screen yellow is close to unreadable as a button
 > colour and unpleasant as a page, so you get the colour you meant rather than the one you named.
+>
+> **`red`** renders a step or two softer than a true red — muted and dusty rather than urgent.
+> This one is not only taste. The portal says *wrong* in red: a failed sign-in, a validation
+> error, a failure toast. Dressing the whole portal in the same saturated red would leave a client
+> unable to tell the brand from the bad news, so the theme steps back and lets the errors stay the
+> loudest red on the screen. It is still worth signing in with a wrong password once to see the
+> two together and decide you are happy.
+>
 > **`indigo` and `violet`** are neighbours and deliberately both offered: indigo is the deeper,
 > bluer one, violet the brighter, pinker one. If in doubt, look at both.
-
-> **A warning about `red`.** The portal uses red for things that have gone wrong — a failed
-> sign-in, a validation error, a failure toast. A red scheme puts your brand in the same colour as
-> your error messages, and a client cannot then tell one from the other at a glance. If you choose
-> it, sign in with a wrong password first and decide whether you are happy with what you see.
 
 ### How the three layers stack
 
