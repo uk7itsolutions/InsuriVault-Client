@@ -6,6 +6,17 @@ use Tests\TestCase;
 
 class PortalThemeTest extends TestCase
 {
+    // Every setting is pinned to unset before each test. Without this the suite reads the
+    // developer's own .env, so a machine with a base theme configured would fail the cases that
+    // assert nothing is emitted — the result would depend on the machine rather than on the code.
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->baseTheme(null);
+        $this->theme([]);
+    }
+
     private function theme(array $theme): void
     {
         config(['portal.theme' => array_merge([
@@ -13,6 +24,11 @@ class PortalThemeTest extends TestCase
             'navigation_text_color' => null,
             'accent_color' => null,
         ], $theme)]);
+    }
+
+    private function baseTheme($name): void
+    {
+        config(['portal.base_theme' => $name]);
     }
 
     // The case every new operator hits: a blank .env must leave the portal exactly as it shipped.
@@ -119,6 +135,80 @@ class PortalThemeTest extends TestCase
         $response->assertSee('--portal-nav-text:#ffffff;', false);
         $response->assertSee('--portal-nav-text-muted:color-mix(in oklab, #ffffff 72%, transparent);', false);
         $response->assertSee('--portal-nav-border:color-mix(in oklab, #ffffff 40%, transparent);', false);
+    }
+
+    // A base theme has to reach past the bar: the page, the cards and the text tones are what make
+    // it a theme rather than a tinted navigation. If only the nav properties come through, the
+    // portal renders a dark bar over a white page, which reads as broken rather than as dark.
+    public function test_a_base_theme_repaints_the_whole_portal()
+    {
+        $this->baseTheme('dark');
+        $this->theme([]);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+        $response->assertSee('--portal-surface:var(--color-slate-800);', false);
+        $response->assertSee('--portal-text:var(--color-slate-50);', false);
+        $response->assertSee('--portal-nav-surface:var(--color-slate-950);', false);
+        $response->assertSee('--portal-accent:var(--color-sky-500);', false);
+    }
+
+    // The ordering is the feature: a base theme is a starting point, not a choice between it and
+    // the colour settings. Picking dark and then an accent must give a dark portal in that accent
+    // — not a dark portal that ignores it, and not a light one. This is the assertion most likely
+    // to be broken by a later change to how the two are combined.
+    public function test_an_operator_colour_is_written_over_the_base_theme()
+    {
+        $this->baseTheme('dark');
+        $this->theme(['accent_color' => 'emerald-500']);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent:var(--color-emerald-500);', false);
+        $response->assertDontSee('--portal-accent:var(--color-sky-500);', false);
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+    }
+
+    // Light is the portal as it ships, so naming it claims nothing and emits nothing. It exists as
+    // a value an operator can write rather than as a blank they have to infer — and once colour
+    // schemes land it is the mode a light scheme is applied to.
+    public function test_naming_the_light_base_is_the_same_as_naming_none()
+    {
+        $this->baseTheme('light');
+        $this->theme([]);
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('<style>', false);
+    }
+
+    // An accent brings tinted companions with it — the panel behind an empty state, its border,
+    // its text. Those were originally mixed towards white and black, which is only correct on a
+    // light portal: over dark they rendered as a pale box on a dark page. Mixing towards the
+    // surface and text tokens instead means the base underneath decides, whichever it is.
+    public function test_the_accents_tinted_companions_follow_the_base_beneath_them()
+    {
+        $this->baseTheme('dark');
+        $this->theme(['accent_color' => 'emerald-500']);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent-surface:color-mix(in oklab, var(--color-emerald-500) 12%, var(--portal-surface));', false);
+        $response->assertSee('--portal-accent-text:color-mix(in oklab, var(--color-emerald-500) 35%, var(--portal-text));', false);
+        $response->assertDontSee('12%, white', false);
+    }
+
+    public function test_an_unknown_base_theme_leaves_the_portal_as_it_ships()
+    {
+        $this->baseTheme('midnight');
+        $this->theme([]);
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('<style>', false);
     }
 
     public function test_each_setting_is_independent_of_the_others()

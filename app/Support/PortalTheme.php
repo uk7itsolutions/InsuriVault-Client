@@ -16,6 +16,39 @@ class PortalTheme
         '50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950',
     ];
 
+    private const BASE_THEMES = [
+
+        'light' => [],
+
+        'dark' => [
+            '--portal-page' => 'var(--color-slate-900)',
+            '--portal-surface' => 'var(--color-slate-800)',
+            '--portal-surface-muted' => 'var(--color-slate-700)',
+            '--portal-surface-subtle' => 'var(--color-slate-700)',
+            '--portal-text' => 'var(--color-slate-50)',
+            '--portal-text-muted' => 'var(--color-slate-300)',
+            '--portal-text-soft' => 'var(--color-slate-300)',
+            '--portal-text-subtle' => 'var(--color-slate-400)',
+            '--portal-border' => 'var(--color-slate-600)',
+            '--portal-input-border' => 'var(--color-slate-500)',
+            '--portal-badge' => 'var(--color-slate-500)',
+            '--portal-badge-text' => 'var(--color-slate-50)',
+            '--portal-nav-surface' => 'var(--color-slate-950)',
+            '--portal-nav-text' => 'var(--color-slate-50)',
+            '--portal-nav-text-muted' => 'var(--color-slate-400)',
+            '--portal-nav-border' => 'var(--color-slate-600)',
+            '--portal-accent' => 'var(--color-sky-500)',
+            '--portal-accent-hover' => 'var(--color-sky-400)',
+            '--portal-accent-ring' => 'var(--color-sky-400)',
+            '--portal-accent-bright' => 'var(--color-sky-400)',
+            '--portal-accent-bright-text' => 'var(--color-sky-300)',
+            '--portal-accent-surface' => 'color-mix(in oklab, var(--color-sky-500) 18%, var(--color-slate-800))',
+            '--portal-accent-border' => 'color-mix(in oklab, var(--color-sky-500) 45%, var(--color-slate-800))',
+            '--portal-accent-text' => 'var(--color-sky-100)',
+        ],
+
+    ];
+
     /**
      * The name shown in the navigation bar and the browser tab. An operator who has set no display
      * name gets the product's own name rather than an empty bar.
@@ -28,11 +61,42 @@ class PortalTheme
     }
 
     /**
-     * The custom properties the layout writes to honour the operator's colours. A property is
-     * absent whenever its setting is unset or is not a colour, which leaves the stylesheet's own
-     * default standing — a value that is not a colour never reaches the document.
+     * The custom properties the layout writes: the chosen base theme's values first, then the
+     * operator's own colours over the top, so a base theme is a starting point rather than a
+     * choice between it and the settings. A property is absent whenever nothing has claimed it,
+     * which leaves the stylesheet's own default standing — and a value that is not a colour never
+     * reaches the document.
      */
     public static function customProperties()
+    {
+        return array_merge(self::baseThemeProperties(), self::operatorProperties());
+    }
+
+    /**
+     * The values of the named base, or nothing at all when none is named or the name is not one
+     * that exists. Light is the portal as it ships and so claims no properties — it is spelled out
+     * rather than left implicit so that an operator can state the choice, and so that a colour
+     * scheme has a mode to be applied to. An unrecognised name leaves the portal as it ships
+     * rather than failing, for the same reason an unrecognised colour does.
+     */
+    private static function baseThemeProperties()
+    {
+        $name = config('portal.base_theme');
+
+        if (!is_string($name)) {
+            return [];
+        }
+
+        $name = strtolower(trim($name));
+
+        if (!array_key_exists($name, self::BASE_THEMES)) {
+            return [];
+        }
+
+        return self::BASE_THEMES[$name];
+    }
+
+    private static function operatorProperties()
     {
         $properties = [];
 
@@ -58,9 +122,9 @@ class PortalTheme
             $properties['--portal-accent-ring'] = self::mix($accent, 85, 'white');
             $properties['--portal-accent-bright'] = self::mix($accent, 62, 'white');
             $properties['--portal-accent-bright-text'] = self::mix($accent, 48, 'white');
-            $properties['--portal-accent-surface'] = self::mix($accent, 10, 'white');
-            $properties['--portal-accent-border'] = self::mix($accent, 28, 'white');
-            $properties['--portal-accent-text'] = self::mix($accent, 78, 'black');
+            $properties['--portal-accent-surface'] = self::mix($accent, 12, 'var(--portal-surface)');
+            $properties['--portal-accent-border'] = self::mix($accent, 35, 'var(--portal-surface)');
+            $properties['--portal-accent-text'] = self::mix($accent, 35, 'var(--portal-text)');
         }
 
         return $properties;
@@ -109,6 +173,12 @@ class PortalTheme
         return sprintf('var(--color-%s-%s)', $family, $shade);
     }
 
+    /**
+     * Mixes towards another token rather than towards white or black wherever the result sits on a
+     * surface: the base decides what that surface is, so a tint written against white turns into a
+     * pale box on a dark portal. Mixing towards the token keeps the operator's accent following
+     * whichever base is underneath it.
+     */
     private static function mix($color, $percentage, $towards)
     {
         return sprintf('color-mix(in oklab, %s %d%%, %s)', $color, $percentage, $towards);

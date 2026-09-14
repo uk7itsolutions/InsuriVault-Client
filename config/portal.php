@@ -21,6 +21,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Base Theme
+    |--------------------------------------------------------------------------
+    |
+    | Whether the portal is light or dark. This is the bottom of three layers:
+    | the base decides every surface, a colour scheme will tint it, and the
+    | individual colours below are written last and win over both. Named rather
+    | than switched on so the vocabulary can grow without retiring a setting
+    | operators already carry. An unrecognised name leaves the portal as it
+    | ships, like any other value here.
+    |
+    */
+
+    'base_theme' => env('PORTAL_BASE_THEME'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Theme
     |--------------------------------------------------------------------------
     |
