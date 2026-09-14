@@ -111,6 +111,8 @@ edit a view, and you never need Node or a build step on the server. Edit the fil
 ```dotenv
 ORGANIZATION_DISPLAY_NAME="Acme Insurance"
 
+PORTAL_BASE_THEME=dark
+
 PORTAL_NAVIGATION_BACKGROUND_COLOR="#111827"
 PORTAL_NAVIGATION_TEXT_COLOR="#f9fafb"
 PORTAL_ACCENT_COLOR=indigo-700
@@ -119,9 +121,38 @@ PORTAL_ACCENT_COLOR=indigo-700
 | Setting | What it changes | Default |
 |---|---|---|
 | `ORGANIZATION_DISPLAY_NAME` | The name in the navigation bar and the browser tab. It is also the name shown to a client when sign-in fails and they need to know who to contact. | `InsuriVault` |
+| `PORTAL_BASE_THEME` | A complete design to start from. See **Base themes** below. | the light theme the portal ships with |
 | `PORTAL_NAVIGATION_BACKGROUND_COLOR` | The navigation bar's background. | `slate-900` |
 | `PORTAL_NAVIGATION_TEXT_COLOR` | The navigation bar's text, and the muted tone used for the Logout link and the menu button. | `slate-50` |
 | `PORTAL_ACCENT_COLOR` | The login header band, the Login button, the View button, links, and focus outlines on the login form. | `sky-700` |
+
+### Base themes
+
+`PORTAL_BASE_THEME` picks a whole design rather than a single colour — the page, the cards, the
+borders, the text tones and the accent all move together.
+
+| Name | What you get |
+|---|---|
+| *(empty)* | The light theme the portal ships with: a dark slate bar over a near-white page. |
+| `dark` | A dark portal throughout — near-black bar, dark page, dark cards, light text, a brighter sky accent so actions still stand out. |
+
+An unrecognised name is ignored and you get the shipped light theme.
+
+**The colour settings are written over the theme, not instead of it.** This is the part worth
+understanding, because it is what makes the themes useful as a starting point:
+
+```dotenv
+PORTAL_BASE_THEME=dark
+PORTAL_ACCENT_COLOR=emerald-500
+```
+
+That gives you the dark portal with green actions — not a green light portal, and not a dark
+portal that ignores your accent. Set the theme first, look at it, then change only what you want
+to move.
+
+**What the theme does not repaint:** a document you are previewing. A PDF renders in its own frame
+and an image keeps its own background, because those are your client's files rather than part of
+the portal. The frame around them follows the theme.
 
 ### Writing a colour
 
