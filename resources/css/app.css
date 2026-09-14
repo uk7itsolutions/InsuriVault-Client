@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import 'tailwindcss' theme(static);
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -8,6 +8,35 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+:root {
+    --portal-page: var(--color-slate-50);
+    --portal-surface: var(--color-white);
+    --portal-surface-muted: var(--color-slate-100);
+    --portal-surface-subtle: var(--color-slate-50);
+    --portal-text: var(--color-slate-900);
+    --portal-text-muted: var(--color-slate-700);
+    --portal-text-soft: var(--color-slate-600);
+    --portal-text-subtle: var(--color-slate-500);
+    --portal-border: var(--color-slate-200);
+    --portal-input-border: var(--color-slate-300);
+    --portal-badge: var(--color-slate-600);
+    --portal-badge-text: var(--color-white);
+
+    --portal-nav-surface: var(--color-slate-900);
+    --portal-nav-text: var(--color-slate-50);
+    --portal-nav-text-muted: var(--color-slate-300);
+    --portal-nav-border: var(--color-slate-600);
+
+    --portal-accent: var(--color-sky-700);
+    --portal-accent-hover: var(--color-sky-800);
+    --portal-accent-ring: var(--color-sky-500);
+    --portal-accent-bright: var(--color-sky-400);
+    --portal-accent-bright-text: var(--color-sky-300);
+    --portal-accent-surface: var(--color-sky-50);
+    --portal-accent-border: var(--color-sky-200);
+    --portal-accent-text: var(--color-sky-900);
 }
 
 @utility page-container {

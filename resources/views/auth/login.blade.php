@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="mx-auto w-full max-w-md">
-    <div class="overflow-hidden rounded-lg bg-white shadow-lg">
-        <div class="bg-sky-700 px-6 py-4">
+    <div class="overflow-hidden rounded-lg bg-[var(--portal-surface)] shadow-lg">
+        <div class="bg-[var(--portal-accent)] px-6 py-4">
             <h4 class="text-2xl font-semibold text-white">Login</h4>
         </div>
         <div class="p-6">
@@ -20,26 +20,26 @@
             <form action="{{ route('login') }}" method="POST" id="loginForm">
                 @csrf
                 <div class="mb-4">
-                    <label for="email" class="mb-1 block text-sm font-medium text-slate-700">Email address</label>
+                    <label for="email" class="mb-1 block text-sm font-medium text-[var(--portal-text-muted)]">Email address</label>
                     <input type="email" name="email" id="email" required
-                           class="block w-full rounded-md border-[1px] border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                           class="block w-full rounded-md border-[1px] border-[var(--portal-input-border)] bg-[var(--portal-surface)] px-3 py-2 text-sm text-[var(--portal-text)] shadow-sm transition focus:border-[var(--portal-accent-ring)] focus:ring-1 focus:ring-[var(--portal-accent-ring)] focus:outline-none"
                            value="{{ old('email') }}"
                            autocomplete="username webauthn">
                 </div>
                 <div class="mb-4">
-                    <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password</label>
+                    <label for="password" class="mb-1 block text-sm font-medium text-[var(--portal-text-muted)]">Password</label>
                     <input type="password" name="password" id="password" required
-                           class="block w-full rounded-md border-[1px] border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                           class="block w-full rounded-md border-[1px] border-[var(--portal-input-border)] bg-[var(--portal-surface)] px-3 py-2 text-sm text-[var(--portal-text)] shadow-sm transition focus:border-[var(--portal-accent-ring)] focus:ring-1 focus:ring-[var(--portal-accent-ring)] focus:outline-none"
                            autocomplete="current-password">
                 </div>
                 <div class="grid gap-2">
                     <button type="submit"
-                            class="w-full rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-800 disabled:opacity-60">Login</button>
+                            class="w-full rounded-md bg-[var(--portal-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--portal-accent-hover)] disabled:opacity-60">Login</button>
                     <button type="button" id="biometricLoginBtn"
-                            class="hidden w-full items-center justify-center rounded-md border-[1px] border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60">
+                            class="hidden w-full items-center justify-center rounded-md border-[1px] border-[var(--portal-input-border)] px-4 py-2 text-sm font-medium text-[var(--portal-text-muted)] transition hover:bg-[var(--portal-surface-muted)] disabled:opacity-60">
                         <x-icon.fingerprint class="mr-1 h-4 w-4"/>Login with Biometrics
                     </button>
-                    <div id="biometricUnavailable" class="hidden items-center justify-center text-center text-xs text-slate-500">
+                    <div id="biometricUnavailable" class="hidden items-center justify-center text-center text-xs text-[var(--portal-text-subtle)]">
                         <x-icon.fingerprint class="mr-1 h-4 w-4"/>Biometric login not available on this device
                     </div>
                 </div>

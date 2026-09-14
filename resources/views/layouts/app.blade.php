@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InsuriVault Client</title>
+    <title>{{ \App\Support\PortalTheme::name() }} Client</title>
     <!-- PWA -->
     <meta name="theme-color" content="#0f172b">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon.svg">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-portal-theme/>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900">
-    <nav class="mb-8 bg-slate-900">
+<body class="bg-[var(--portal-page)] font-sans text-[var(--portal-text)]">
+    <nav class="mb-8 bg-[var(--portal-nav-surface)]">
         <div class="page-container lg:flex lg:h-16 lg:items-center lg:justify-between">
             <div class="flex h-16 items-center justify-between lg:h-auto">
-                <a class="text-xl font-semibold text-slate-50 no-underline" href="{{ route('documents.index') }}">InsuriVault</a>
+                <a class="text-xl font-semibold text-[var(--portal-nav-text)] no-underline" href="{{ route('documents.index') }}">{{ \App\Support\PortalTheme::name() }}</a>
                 @if(Session::has('api_token'))
                     <button id="navbarToggle" type="button"
-                            class="inline-flex items-center justify-center rounded-md border-[1px] border-slate-600 p-[0.5rem] text-slate-200 lg:hidden"
+                            class="inline-flex items-center justify-center rounded-md border-[1px] border-[var(--portal-nav-border)] p-[0.5rem] text-[var(--portal-nav-text-muted)] lg:hidden"
                             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -29,12 +30,12 @@
             @if(Session::has('api_token'))
                 <div id="navbarNav"
                      class="hidden flex-col items-start gap-[0.5rem] pb-[0.75rem] lg:flex lg:flex-row lg:items-center lg:gap-6 lg:pb-0">
-                    <span class="text-sm text-slate-100">{{ Session::get('user_email') }}</span>
+                    <span class="text-sm text-[var(--portal-nav-text)]">{{ Session::get('user_email') }}</span>
                     <button id="registerBiometricsBtn"
-                            class="hidden items-center rounded-md border-[1px] border-sky-400 px-[0.75rem] py-[0.375rem] text-sm font-medium text-sky-300 transition hover:bg-sky-400 hover:text-slate-900">
+                            class="hidden items-center rounded-md border-[1px] border-[var(--portal-accent-bright)] px-[0.75rem] py-[0.375rem] text-sm font-medium text-[var(--portal-accent-bright-text)] transition hover:bg-[var(--portal-accent-bright)] hover:text-[var(--portal-nav-surface)]">
                         <x-icon.fingerprint class="mr-1 h-4 w-4"/>Register Biometrics
                     </button>
-                    <a class="text-sm text-slate-300 no-underline transition hover:text-white" href="{{ route('logout') }}">Logout</a>
+                    <a class="text-sm text-[var(--portal-nav-text-muted)] no-underline transition hover:text-[var(--portal-nav-text)]" href="{{ route('logout') }}">Logout</a>
                 </div>
             @endif
         </div>
