@@ -33,18 +33,38 @@ Everything else in the portal works over plain HTTP. Only biometric login has th
 
 ## Installation Steps
 
-### 1. Upload Files
+### 1. Get the Files onto the Server
 
-- Use the files provided in the `upload` folder of the distribution. This folder excludes development-only files like Docker assets and tests.
-- Upload all files from the `upload` folder to your server's web root:
-    - **In Plesk**: This is usually `httpdocs` for a main domain or the subdomain's folder (e.g., `demo.insuri-vault.com`) for a subdomain.
-    - **In cPanel**: This is usually `public_html`.
-- **IMPORTANT**: Ensure you copy `.env.example` to `.env` in your project root. This file now includes a temporary `APP_KEY` that allows the application to boot so you can reach the installer. (The installer will replace this with a secure, unique key during the final step).
-- **IMPORTANT**: The `upload` folder does **not** include the `vendor` directory. You must either:
-    - **Option A (Recommended)**: Run `composer install` via SSH on your server.
-    - **Option B**: Run `composer install` locally and upload the generated `vendor` folder to your server.
-    - **Option C**: Use the Plesk/cPanel "Composer" extension to install dependencies.
-- **IMPORTANT**: Ensure the document root of your domain/subdomain is pointed to the `/public` directory of the project.
+The portal is a single tree: what you download is what the server runs. Pick whichever route your hosting allows.
+
+**Option A — Download the release archive (recommended for Plesk / cPanel).**
+
+1. Go to the [Releases page](https://github.com/uk7itsolutions/InsuriVault-Client/releases) and download `insurivault-client-portal-<version>.zip` from the latest release.
+2. Extract it. Everything sits under a single `insurivault-client-portal/` folder.
+3. Upload the **contents** of that folder — not the folder itself — to your domain's directory:
+    - **In Plesk**: usually `httpdocs` for a main domain, or the subdomain's folder (e.g. `demo.insuri-vault.com`) for a subdomain.
+    - **In cPanel**: usually `public_html`.
+    - Include hidden files such as `.env.example` and `public/.htaccess`. Most FTP clients hide them by default.
+
+**Option B — Clone with git (needs SSH access).**
+
+```bash
+git clone https://github.com/uk7itsolutions/InsuriVault-Client.git .
+```
+
+Upgrading later is then `git pull`, which is the advantage of this route. A clone also brings development-only files — `tests/`, `docker/`, `docker-compose.yml`, `phpunit.xml`, `vite.config.js` and `.github/`. None of them is reachable over the web, because the document root is `public/` and they sit outside it. You may delete them; leaving them costs nothing but disk.
+
+The release archive in Option A is the same tree with exactly those files already stripped out.
+
+#### Then, whichever route you took
+
+- **No build step is required.** The compiled stylesheet and script ship with the download, in `public/build`. You do **not** need Node, npm or `npm run build` on the server — that is deliberate, since shared hosting rarely has them.
+- **Copy `.env.example` to `.env` in the project root.** It includes a temporary `APP_KEY` so the application can boot far enough to reach the installer; the installer replaces it with a unique, secure key at the final step.
+- **Install the PHP dependencies.** The download does **not** include `vendor/`. Choose one:
+    - **Option A (Recommended)**: run `composer install --no-dev --optimize-autoloader` over SSH on the server.
+    - **Option B**: run `composer install --no-dev` locally and upload the resulting `vendor` folder.
+    - **Option C**: use the Plesk/cPanel "Composer" extension.
+- **Point the document root at `/public`.** This is the single most common installation mistake — see the Plesk instructions below, and the 403 entry under Troubleshooting.
 
 ### 2. Set Permissions
 
@@ -53,32 +73,6 @@ Ensure the following directories are writable by the web server (recursively):
 - `bootstrap/cache`
 
 On many servers, setting these to `775` or `755` is sufficient. If you are on Plesk, ensure the `psv-app`, `www-data` or your FTP user has write access. You can usually set this via the Plesk File Manager by clicking on the folder permissions.
-
----
-
-## Special Instructions for Plesk Obsidian
-
-### Setting the Document Root for a Subdomain
-
-If you are using a subdomain (e.g., `portal.yourdomain.com`), Plesk might default the document root to the subdomain's folder. You MUST change it to point to the `public` subfolder:
-
-1. Log in to Plesk.
-2. Go to **Websites & Domains**.
-3. Find your subdomain and click **Hosting Settings**.
-4. Locate the **Document root** field. It will likely show something like `subdomain.yourdomain.com`.
-5. Change it to `subdomain.yourdomain.com/public`.
-6. Click **OK** to save.
-
-### If you cannot change the Document Root
-
-If your hosting provider does not allow changing the document root, you can move the contents of the `public` folder to the subdomain root:
-
-1. Move all files from `upload/public` (including `.htaccess` and `index.php`) directly into your subdomain root (e.g., `httpdocs` or your subdomain folder). Ensure hidden files like `.htaccess` are included.
-2. Move all other folders (`app`, `bootstrap`, `config`, etc.) into the same subdomain root.
-3. Open `index.php` (now in the root) and change lines 14 and 18:
-   - Change `require __DIR__.'/../vendor/autoload.php';` to `require __DIR__.'/vendor/autoload.php';`
-   - Change `$app = require_once __DIR__.'/../bootstrap/app.php';` to `$app = require_once __DIR__.'/bootstrap/app.php';`
-4. **Note**: This method is less secure as it exposes your configuration files to the web if not handled correctly. We strongly recommend setting the Document Root instead.
 
 ### 3. Create a Database
 
@@ -108,12 +102,38 @@ Once the installation is complete, the application will be ready to use. Navigat
 
 ---
 
+## Special Instructions for Plesk Obsidian
+
+### Setting the Document Root for a Subdomain
+
+If you are using a subdomain (e.g., `portal.yourdomain.com`), Plesk might default the document root to the subdomain's folder. You MUST change it to point to the `public` subfolder:
+
+1. Log in to Plesk.
+2. Go to **Websites & Domains**.
+3. Find your subdomain and click **Hosting Settings**.
+4. Locate the **Document root** field. It will likely show something like `subdomain.yourdomain.com`.
+5. Change it to `subdomain.yourdomain.com/public`.
+6. Click **OK** to save.
+
+### If you cannot change the Document Root
+
+If your hosting provider does not allow changing the document root, you can move the contents of the `public` folder to the subdomain root:
+
+1. Move all files from the project's `public` folder (including `.htaccess`, `index.php` and the `build` folder) directly into your subdomain root (e.g., `httpdocs` or your subdomain folder). Ensure hidden files like `.htaccess` are included.
+2. Move all other folders (`app`, `bootstrap`, `config`, etc.) into the same subdomain root.
+3. Open `index.php` (now in the root) and change lines 14 and 18:
+   - Change `require __DIR__.'/../vendor/autoload.php';` to `require __DIR__.'/vendor/autoload.php';`
+   - Change `$app = require_once __DIR__.'/../bootstrap/app.php';` to `$app = require_once __DIR__.'/bootstrap/app.php';`
+4. **Note**: This method is less secure as it exposes your configuration files to the web if not handled correctly. We strongly recommend setting the Document Root instead.
+
+---
+
 ## Troubleshooting
 
 - **403 Forbidden / Directory Listing / AH01276**: This error occurs when Apache looks for an index file (like `index.php`) in the root of the subdomain and doesn't find it.
     - **Cause**: Apache is serving the base folder (e.g., `demo.insuri-vault.com/`) instead of the `public` folder.
-    - **Fix 1**: Ensure your domain's document root is set to the `/public` folder (see Step 1 and the "Special Instructions" below). In Plesk, double-check that the "Document root" field includes the subdomain folder followed by `/public` (e.g., `demo.insuri-vault.com/public`).
-    - **Fix 2**: If you cannot change the document root, follow the "If you cannot change the Document Root" section below to move the files from `public/` to your subdomain root.
+    - **Fix 1**: Ensure your domain's document root is set to the `/public` folder (see Step 1 and the "Special Instructions" section above). In Plesk, double-check that the "Document root" field includes the subdomain folder followed by `/public` (e.g., `demo.insuri-vault.com/public`).
+    - **Fix 2**: If you cannot change the document root, follow the "If you cannot change the Document Root" section above to move the files from `public/` to your subdomain root.
     - **Verify**: Use the Plesk File Manager to check that `index.php` exists in the exact folder specified as the "Document root" in Hosting Settings.
 - **500 Internal Server Error / MissingAppKeyException**: This generic error can have several causes:
     - **Missing .env file**: Ensure you have a `.env` file in your root folder. Copy `.env.example` to `.env`.

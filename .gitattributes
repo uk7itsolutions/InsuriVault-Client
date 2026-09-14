@@ -6,6 +6,16 @@
 *.md diff=markdown
 *.php diff=php
 
+# Kept out of the release archive that `git archive` builds. These are development-only files a
+# self-hosting operator has no use for. The document root is `public/`, so none of them is
+# web-reachable even when present — excluding them is tidiness, not a security control.
+/.editorconfig export-ignore
+/.gitattributes export-ignore
 /.github export-ignore
+/docker export-ignore
+/docker-compose.yml export-ignore
+/phpunit.xml export-ignore
+/tests export-ignore
+/vite.config.js export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
