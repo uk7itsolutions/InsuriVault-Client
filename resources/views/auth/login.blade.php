@@ -1,47 +1,49 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Login</h4>
-            </div>
-            <div class="card-body">
-                @if($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+<div class="mx-auto w-full max-w-md">
+    <div class="overflow-hidden rounded-lg bg-white shadow-lg">
+        <div class="bg-sky-700 px-6 py-4">
+            <h4 class="text-2xl font-semibold text-white">Login</h4>
+        </div>
+        <div class="p-6">
+            @if($errors->any())
+                <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                    <ul class="list-disc space-y-1 pl-5">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                <form action="{{ route('login') }}" method="POST" id="loginForm">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" name="email" id="email" class="form-control" required
-                               value="{{ old('email') }}"
-                               autocomplete="username webauthn">
+            <form action="{{ route('login') }}" method="POST" id="loginForm">
+                @csrf
+                <div class="mb-4">
+                    <label for="email" class="mb-1 block text-sm font-medium text-slate-700">Email address</label>
+                    <input type="email" name="email" id="email" required
+                           class="block w-full rounded-md border-[1px] border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                           value="{{ old('email') }}"
+                           autocomplete="username webauthn">
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password</label>
+                    <input type="password" name="password" id="password" required
+                           class="block w-full rounded-md border-[1px] border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                           autocomplete="current-password">
+                </div>
+                <div class="grid gap-2">
+                    <button type="submit"
+                            class="w-full rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-800 disabled:opacity-60">Login</button>
+                    <button type="button" id="biometricLoginBtn"
+                            class="hidden w-full items-center justify-center rounded-md border-[1px] border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60">
+                        <x-icon.fingerprint class="mr-1 h-4 w-4"/>Login with Biometrics
+                    </button>
+                    <div id="biometricUnavailable" class="hidden items-center justify-center text-center text-xs text-slate-500">
+                        <x-icon.fingerprint class="mr-1 h-4 w-4"/>Biometric login not available on this device
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" name="password" id="password" class="form-control" required
-                               autocomplete="current-password">
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                        <button type="button" id="biometricLoginBtn" class="btn btn-outline-secondary d-none">
-                            <i class="bi bi-fingerprint me-1"></i>Login with Biometrics
-                        </button>
-                        <div id="biometricUnavailable" class="text-center text-muted small d-none">
-                            <i class="bi bi-fingerprint me-1"></i>Biometric login not available on this device
-                        </div>
-                    </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -66,9 +68,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     } catch (_) { /* ignore */ }
 
     if (platformAvailable) {
-        biometricBtn.classList.remove('d-none');
+        biometricBtn.classList.remove('hidden');
+        biometricBtn.classList.add('inline-flex');
     } else {
-        biometricNote.classList.remove('d-none');
+        biometricNote.classList.remove('hidden');
+        biometricNote.classList.add('flex');
     }
 
     // ── Biometric login ───────────────────────────────────────────────────────
@@ -167,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch (err) {
             handleWebAuthnError(err);
         } finally {
-            setButtonLoading(biometricBtn, false, '<i class="bi bi-fingerprint me-1"></i>Login with Biometrics');
+            setButtonLoading(biometricBtn, false);
         }
     }
 
@@ -213,7 +217,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             setTimeout(() => { window.location.href = '/'; }, 2500);
         } finally {
-            setButtonLoading(biometricBtn, false, '<i class="bi bi-fingerprint me-1"></i>Login with Biometrics');
+            setButtonLoading(biometricBtn, false);
         }
     }
 
@@ -292,34 +296,17 @@ document.addEventListener('DOMContentLoaded', async function () {
         showToast(msg, type);
     }
 
-    function setButtonLoading(btn, loading, label) {
+    // Restores the button's own markup rather than a caller-supplied label, so the icon it was
+    // rendered with survives without the ceremony code having to repeat it as a string.
+    function setButtonLoading(button, loading, loadingLabel) {
         if (loading) {
-            btn.dataset.originalHtml = btn.innerHTML;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${label}`;
-            btn.disabled  = true;
+            button.dataset.originalHtml = button.innerHTML;
+            button.innerHTML = `<span class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" role="status" aria-hidden="true"></span>${loadingLabel}`;
+            button.disabled  = true;
         } else {
-            btn.innerHTML = btn.dataset.originalHtml || label;
-            btn.disabled  = false;
+            button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+            button.disabled  = false;
         }
-    }
-
-    function showToast(message, type) {
-        const container = document.getElementById('toastContainer');
-        if (!container) return;
-        const id = 'toast-' + Date.now();
-        container.insertAdjacentHTML('beforeend', `
-            <div id="${id}" class="toast align-items-center text-bg-${type} border-0"
-                 role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                            data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>`);
-        const el    = document.getElementById(id);
-        const toast = new bootstrap.Toast(el, { autohide: true, delay: 5000 });
-        toast.show();
-        el.addEventListener('hidden.bs.toast', () => el.remove());
     }
 
     function base64ToBuffer(base64) {
