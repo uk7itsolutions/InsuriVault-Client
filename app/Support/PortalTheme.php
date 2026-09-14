@@ -130,7 +130,7 @@ class PortalTheme
             'border' => 'color-mix(in oklab, {200} 75%, var(--color-white))',
             'input-border' => '300',
             'badge' => '700',
-            'nav-surface' => '800',
+            'nav-surface' => '900',
             'nav-text' => '50',
             'nav-text-muted' => '200',
             'nav-border' => '600',

@@ -227,7 +227,7 @@ class PortalThemeTest extends TestCase
         $light = $this->get('/login');
 
         $light->assertSee('--portal-page:color-mix(in oklab, var(--color-emerald-50) 45%, var(--color-white));', false);
-        $light->assertSee('--portal-nav-surface:var(--color-emerald-800);', false);
+        $light->assertSee('--portal-nav-surface:var(--color-emerald-900);', false);
         $light->assertSee('--portal-accent:var(--color-emerald-700);', false);
 
         $this->baseTheme('dark');
