@@ -55,7 +55,7 @@
                                         <x-icon.eye class="h-4 w-4"/> <span class="hidden sm:inline">View</span>
                                     </a>
                                     <a href="{{ route('documents.download', [$accountEntry['account']['id'], $file['fileId']]) }}"
-                                       class="inline-flex items-center gap-1 rounded-md border-[1px] border-emerald-600 px-2 py-1 text-xs font-medium text-emerald-700 no-underline transition hover:bg-emerald-600 hover:text-white"
+                                       class="inline-flex items-center gap-1 rounded-md border-[1px] border-emerald-600 bg-emerald-600 px-2 py-1 text-xs font-medium text-white no-underline transition hover:border-emerald-700 hover:bg-emerald-700"
                                        title="Download">
                                         <x-icon.download class="h-4 w-4"/> <span class="hidden sm:inline">Download</span>
                                     </a>
