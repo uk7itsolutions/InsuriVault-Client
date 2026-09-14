@@ -63,12 +63,17 @@ If the organization is not found, inactive, or disabled, the request is rejected
 | 4 | Owner |
 | 5 | User |
 
-### FileCategory
-| Value | Name |
-|-------|------|
-| 0 | Unknown |
-| 1 | Insurance |
-| 2 | TaxForms |
+### AccountType
+
+A property of the **account**, fixed when it was created. It decides how that account's documents
+are filed, and so which of `year` and `month` its files carry. The portal shows it on the account
+heading, not on each file.
+
+| Value | Name | Files carry |
+|-------|------|-------------|
+| 0 | Standard | neither a year nor a month |
+| 1 | Insurance | a year and a month |
+| 2 | TaxForms | a tax year |
 
 ### DownloadFormat
 | Value | Name | Behavior |
@@ -265,7 +270,6 @@ Lists files the authenticated client has access to, with optional filters.
 ```json
 {
   "accountId": 101,
-  "fileCategory": 1,
   "year": 2025,
   "month": 1
 }
@@ -276,9 +280,11 @@ All fields are optional. If `accountId` is omitted, files for **all** accounts t
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `accountId` | int | No | Filter to a specific account |
-| `fileCategory` | int (FileCategory) | No | Filter by file category (0=Unknown, 1=Insurance, 2=TaxForms) |
-| `year` | int | No | Filter by year (UTC) |
-| `month` | int | No | Filter by month 1-12 (UTC) |
+| `year` | int | No | Narrow to a year (UTC). Ignored for a Standard account, which files no year |
+| `month` | int | No | Narrow to a month 1-12 (UTC). Ignored for a TaxForms or Standard account |
+
+There is no category filter. How documents are filed belongs to the account, so it is reported on
+the account in the response rather than asked for in the request.
 
 **Success response (200):**
 ```json
@@ -287,13 +293,14 @@ All fields are optional. If `accountId` is omitted, files for **all** accounts t
     "account": {
       "id": 101,
       "name": "John Doe",
+      "accountType": "Insurance",
       "isActive": true,
       "isDisabled": false
     },
     "files": [
       {
         "fileId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "fileCategory": "Insurance",
+        "accountType": "Insurance",
         "year": 2025,
         "month": 1,
         "originalFileName": "policy_jan_2025.pdf",

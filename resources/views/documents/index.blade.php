@@ -13,13 +13,15 @@
         <div class="mb-6 overflow-hidden rounded-lg bg-[var(--portal-surface)] shadow-sm">
             <div class="border-b-[1px] border-[var(--portal-border)] bg-[var(--portal-surface-muted)] px-4 py-3">
                 <h5 class="text-base font-semibold text-[var(--portal-text)]">Account: {{ $accountEntry['account']['name'] }} ({{ Session::get('user_email') }})</h5>
+                @if(!empty($accountEntry['account']['accountType']))
+                    <span class="mt-1 inline-flex rounded-full bg-[var(--portal-badge)] px-2 py-[0.125rem] text-xs font-medium text-[var(--portal-badge-text)]">{{ $accountEntry['account']['accountType'] }}</span>
+                @endif
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse text-left text-sm">
                     <thead class="bg-[var(--portal-surface-subtle)] text-[var(--portal-text-soft)]">
                         <tr>
                             <th class="px-4 py-2 font-semibold">File Name</th>
-                            <th class="hidden px-4 py-2 font-semibold md:table-cell">Category</th>
                             <th class="hidden px-4 py-2 font-semibold md:table-cell">Date</th>
                             <th class="hidden px-4 py-2 font-semibold lg:table-cell">Uploaded At</th>
                             <th class="px-4 py-2 text-right font-semibold">Actions</th>
@@ -30,15 +32,11 @@
                             <tr class="border-t-[1px] border-[var(--portal-border)] transition hover:bg-[var(--portal-surface-subtle)]">
                                 <td class="px-4 py-3">
                                     <div class="font-semibold">{{ $file['originalFileName'] }}</div>
-                                    <div class="text-xs text-[var(--portal-text-subtle)] md:hidden">
-                                        {{ $file['fileCategory'] }}
-                                        @if($file['year'] || $file['month'])
-                                            • {{ $file['month'] ? date('F', mktime(0, 0, 0, $file['month'], 10)) : '' }} {{ $file['year'] }}
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="hidden px-4 py-3 md:table-cell">
-                                    <span class="inline-flex rounded-full bg-[var(--portal-badge)] px-2 py-[0.125rem] text-xs font-medium text-[var(--portal-badge-text)]">{{ $file['fileCategory'] }}</span>
+                                    @if($file['year'] || $file['month'])
+                                        <div class="text-xs text-[var(--portal-text-subtle)] md:hidden">
+                                            {{ $file['month'] ? date('F', mktime(0, 0, 0, $file['month'], 10)) : '' }} {{ $file['year'] }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="hidden px-4 py-3 md:table-cell">
                                     @if($file['year'] || $file['month'])
