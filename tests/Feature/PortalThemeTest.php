@@ -270,19 +270,44 @@ class PortalThemeTest extends TestCase
     // theme would dress the brand in the same colour as its own error messages, so red sits a
     // step or two lighter than the shade rule the other six follow. The errors stay the loudest
     // red on the screen, which is the only way a client can still tell them apart at a glance.
-    public function test_red_is_softened_so_the_errors_stay_louder_than_the_theme()
+    public function test_red_on_light_is_desaturated_rather_than_merely_lightened()
     {
         $this->colorScheme('red');
-        $light = $this->get('/login');
 
-        $light->assertSee('--portal-accent:var(--color-red-600);', false);
-        $light->assertSee('--portal-nav-surface:var(--color-red-700);', false);
+        $response = $this->get('/login');
 
+        $response->assertSee('--portal-accent:color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600));', false);
+        $response->assertSee('--portal-page:color-mix(in oklab, var(--color-red-50) 55%, var(--color-white));', false);
+        $response->assertDontSee('--portal-page:var(--color-red-50);', false);
+    }
+
+    // Red on dark keeps the base's neutral page and cards and turns only the bar and the accents
+    // red, which is what a null in a scheme's shade table means. Red is the only scheme that does
+    // this: a full red dark portal read as one long error message.
+    public function test_red_on_dark_leaves_the_base_background_alone()
+    {
         $this->baseTheme('dark');
-        $dark = $this->get('/login');
+        $this->colorScheme('red');
 
-        $dark->assertSee('--portal-page:var(--color-red-900);', false);
-        $dark->assertSee('--portal-accent:var(--color-red-300);', false);
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-slate-900);', false);
+        $response->assertSee('--portal-surface:var(--color-slate-800);', false);
+        $response->assertSee('--portal-nav-surface:var(--color-red-950);', false);
+        $response->assertSee('--portal-accent:var(--color-red-300);', false);
+    }
+
+    // The other schemes are unaffected by red's departures: they still tint the page and the
+    // cards on dark, from the same table red overrides for itself.
+    public function test_the_other_schemes_still_tint_the_dark_background()
+    {
+        $this->baseTheme('dark');
+        $this->colorScheme('violet');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-violet-950);', false);
+        $response->assertSee('--portal-surface:var(--color-violet-900);', false);
     }
 
     // Every name in the documentation has to resolve to a scheme, in both directions: a rainbow

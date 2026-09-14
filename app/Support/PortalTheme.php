@@ -53,18 +53,27 @@ class PortalTheme
 
         'red' => [
             'family' => 'red',
-            'light' => '600',
+            'light' => 'color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600))',
             'dark' => '300',
             'shades' => [
-                'light' => ['nav-surface' => '700', 'badge' => '600'],
+                'light' => [
+                    'page' => 'color-mix(in oklab, var(--color-red-50) 55%, var(--color-white))',
+                    'surface-muted' => 'color-mix(in oklab, var(--color-red-100) 50%, var(--color-white))',
+                    'surface-subtle' => 'color-mix(in oklab, var(--color-red-50) 55%, var(--color-white))',
+                    'border' => 'color-mix(in oklab, var(--color-red-200) 65%, var(--color-white))',
+                    'input-border' => 'color-mix(in oklab, var(--color-red-300) 65%, var(--color-white))',
+                    'nav-surface' => 'color-mix(in oklab, var(--color-red-900) 78%, var(--color-slate-800))',
+                    'badge' => 'color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600))',
+                ],
                 'dark' => [
-                    'page' => '900',
-                    'surface' => '800',
-                    'surface-muted' => '700',
-                    'surface-subtle' => '700',
-                    'border' => '600',
-                    'input-border' => '500',
+                    'page' => null,
+                    'surface' => null,
+                    'surface-muted' => null,
+                    'surface-subtle' => null,
+                    'border' => null,
+                    'input-border' => null,
                     'nav-surface' => '950',
+                    'badge' => '700',
                 ],
             ],
         ],
@@ -173,9 +182,11 @@ class PortalTheme
      * yellow; a true yellow is illegible as a button colour and unpleasant as a page, so yellow
      * draws from amber. They get the colour they meant rather than the one they named.
      *
-     * A scheme may also soften the shade rule for its own hue. Red does: the portal says "wrong"
-     * in rose, so a saturated red theme would be the same colour as its own error messages. Red
-     * sits a step or two lighter throughout, which leaves the errors the loudest red on screen.
+     * A scheme may also depart from the shade rule for its own hue, and red does twice. On light
+     * it is desaturated towards grey rather than merely lightened, because a bright red page and
+     * a bright red bar compete with the rose the portal says "wrong" in. On dark it leaves the
+     * page and the cards alone entirely — a null in its table means "keep what the base chose" —
+     * so the portal stays neutral dark and only the bar, the borders and the accents turn red.
      */
     private static function schemeProperties($base)
     {
@@ -193,19 +204,35 @@ class PortalTheme
 
         $scheme = self::SCHEMES[$name];
         $family = $scheme['family'];
-        $shades = array_merge(self::SCHEME_SHADES[$base], isset($scheme['shades'][$base]) ? $scheme['shades'][$base] : []);
+        $overrides = isset($scheme['shades'][$base]) ? $scheme['shades'][$base] : [];
+        $shades = array_merge(self::SCHEME_SHADES[$base], $overrides);
 
         $properties = [];
 
         foreach ($shades as $surface => $shade) {
-            $properties['--portal-' . $surface] = self::palette($family, $shade);
+            if ($shade === null) {
+                continue;
+            }
+
+            $properties['--portal-' . $surface] = self::schemeValue($family, $shade);
         }
 
-        if ($base === 'dark' && !isset($scheme['shades'][$base]['nav-surface'])) {
+        if ($base === 'dark' && !array_key_exists('nav-surface', $overrides)) {
             $properties['--portal-nav-surface'] = self::mix(self::palette($family, '950'), 65, 'black');
         }
 
-        return array_merge($properties, self::accentFamily(self::palette($family, $scheme[$base])));
+        return array_merge($properties, self::accentFamily(self::schemeValue($family, $scheme[$base])));
+    }
+
+    /**
+     * A scheme names a shade of its own palette for most surfaces, which keeps the table readable.
+     * Where a hue needs a colour the palette does not hold — a red desaturated towards grey so it
+     * stops competing with the portal's error messages — it states the value outright instead. A
+     * number means a shade; anything else is already a colour.
+     */
+    private static function schemeValue($family, $shade)
+    {
+        return ctype_digit($shade) ? self::palette($family, $shade) : $shade;
     }
 
     private static function operatorProperties()

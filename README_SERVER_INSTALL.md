@@ -150,7 +150,7 @@ The seven are the rainbow, in order:
 
 | Name | What it suits |
 |---|---|
-| `red` | Warm and soft rather than urgent — a muted, dusty red. See below for why it is not a true red. |
+| `red` | Muted and dusty rather than urgent, and the only scheme that leaves the dark background neutral. See below. |
 | `orange` | Warm and approachable without being loud. |
 | `yellow` | Bright and optimistic. Rendered in a golden amber — see below. |
 | `green` | Calm, and the most conventional choice for anything financial. |
@@ -168,12 +168,13 @@ is the light version.
 > **`yellow`** renders in a golden amber. A true screen yellow is close to unreadable as a button
 > colour and unpleasant as a page, so you get the colour you meant rather than the one you named.
 >
-> **`red`** renders a step or two softer than a true red — muted and dusty rather than urgent.
-> This one is not only taste. The portal says *wrong* in red: a failed sign-in, a validation
-> error, a failure toast. Dressing the whole portal in the same saturated red would leave a client
-> unable to tell the brand from the bad news, so the theme steps back and lets the errors stay the
-> loudest red on the screen. It is still worth signing in with a wrong password once to see the
-> two together and decide you are happy.
+> **`red`** is deliberately not a true red, and behaves differently from the other six.
+> The portal says *wrong* in red — a failed sign-in, a validation error, a failure toast — so a
+> saturated red theme would leave a client unable to tell the brand from the bad news. Over
+> **light** it is desaturated towards grey: a dusty, muted red rather than a bright one. Over
+> **dark** it leaves the page and the cards neutral and turns only the bar, the borders and the
+> buttons red, because a fully red dark portal reads as one long error message. Sign in with a
+> wrong password once to see the theme and an error together.
 >
 > **`indigo` and `violet`** are neighbours and deliberately both offered: indigo is the deeper,
 > bluer one, violet the brighter, pinker one. If in doubt, look at both.
