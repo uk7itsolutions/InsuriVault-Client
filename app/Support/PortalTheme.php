@@ -84,7 +84,7 @@ class PortalTheme
                     'nav-surface' => 'color-mix(in oklab, var(--color-red-900) 78%, var(--color-slate-800))',
                     'badge' => 'color-mix(in oklab, var(--color-red-700) 82%, var(--color-slate-600))',
                 ],
-                'dark' => ['badge' => '700'],
+                'dark' => ['badge' => '700', 'accent-contrast' => 'var(--color-white)'],
             ],
         ],
         'orange' => [
@@ -120,7 +120,8 @@ class PortalTheme
             'light' => '600',
             'dark' => '400',
             'shades' => [
-                'light' => ['nav-surface' => '800'],
+                'light' => ['nav-surface' => '800', 'badge' => '700'],
+                'dark' => ['nav-surface' => '900'],
             ],
         ],
         'indigo' => ['family' => 'indigo', 'light' => '700', 'dark' => '400'],
@@ -136,7 +137,7 @@ class PortalTheme
             'surface-subtle' => 'color-mix(in oklab, {50} 45%, var(--color-white))',
             'border' => 'color-mix(in oklab, {200} 75%, var(--color-white))',
             'input-border' => '300',
-            'badge' => '700',
+            'badge' => '800',
             'nav-surface' => '900',
             'nav-text' => '50',
             'nav-text-muted' => '200',
@@ -148,6 +149,7 @@ class PortalTheme
             'nav-surface' => '950',
             'nav-text-muted' => '200',
             'nav-border' => '700',
+            'accent-contrast' => '950',
         ],
 
     ];

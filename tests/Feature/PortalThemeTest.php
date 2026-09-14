@@ -248,7 +248,7 @@ class PortalThemeTest extends TestCase
 
         $response->assertSee('--portal-surface-muted:color-mix(in oklab, var(--color-indigo-100) 60%, var(--color-white));', false);
         $response->assertSee('--portal-border:color-mix(in oklab, var(--color-indigo-200) 75%, var(--color-white));', false);
-        $response->assertSee('--portal-badge:var(--color-indigo-700);', false);
+        $response->assertSee('--portal-badge:var(--color-indigo-800);', false);
     }
 
     // The name an operator writes and the palette it draws from are deliberately separate. A true
@@ -353,7 +353,7 @@ class PortalThemeTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertSee('--portal-page:var(--color-slate-900);', false);
-        $response->assertSee('--portal-nav-surface:var(--color-blue-950);', false);
+        $response->assertSee('--portal-nav-surface:var(--color-blue-900);', false);
         $response->assertSee('--portal-accent:var(--color-rose-500);', false);
         $response->assertDontSee('--portal-accent:var(--color-blue-400);', false);
         $response->assertDontSee('--portal-accent:var(--color-sky-500);', false);
