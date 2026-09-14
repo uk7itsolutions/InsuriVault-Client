@@ -59,6 +59,19 @@ class PortalThemeTest extends TestCase
         $response->assertSee('--portal-accent:#123abc;', false);
     }
 
+    // A .env file treats an unquoted # as the start of a comment, so PORTAL_ACCENT_COLOR=#123abc
+    // reaches the config as an empty string and the operator's colour silently does nothing. The
+    // hash is optional here so that a hex written without it cannot be eaten by the parser — the
+    // documentation offers both spellings, and this is the one no quoting can break.
+    public function test_a_hex_colour_may_be_written_without_its_hash()
+    {
+        $this->theme(['accent_color' => '123abc']);
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-accent:#123abc;', false);
+    }
+
     // A Tailwind name resolves to the variable the stylesheet already carries, which is what lets a
     // colour change without a build. It only works because the full theme is emitted — Tailwind
     // prunes unused colour variables by default, and indigo is not otherwise used by any view.

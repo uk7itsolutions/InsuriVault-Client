@@ -71,6 +71,10 @@ class PortalTheme
      * or a Tailwind palette name resolved to the variable the stylesheet already carries. Null
      * means the setting was absent or was not a colour, which the caller treats as "use the
      * default" rather than as an error: a portal must render whatever is in the file.
+     *
+     * The hash is optional because a .env file treats an unquoted # as the start of a comment, so
+     * PORTAL_ACCENT_COLOR=#1f2937 arrives here as an empty string. Accepting 1f2937 gives that
+     * operator a spelling that cannot be eaten by the parser.
      */
     private static function resolveColor($value)
     {
@@ -80,8 +84,8 @@ class PortalTheme
 
         $value = strtolower(trim($value));
 
-        if (preg_match('/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $value) === 1) {
-            return $value;
+        if (preg_match('/^#?((?:[0-9a-f]{3}|[0-9a-f]{6}))$/', $value, $hexMatches) === 1) {
+            return '#' . $hexMatches[1];
         }
 
         if ($value === 'black' || $value === 'white') {

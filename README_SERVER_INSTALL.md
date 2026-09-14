@@ -111,8 +111,8 @@ edit a view, and you never need Node or a build step on the server. Edit the fil
 ```dotenv
 ORGANIZATION_DISPLAY_NAME="Acme Insurance"
 
-PORTAL_NAVIGATION_BACKGROUND_COLOR=#111827
-PORTAL_NAVIGATION_TEXT_COLOR=#f9fafb
+PORTAL_NAVIGATION_BACKGROUND_COLOR="#111827"
+PORTAL_NAVIGATION_TEXT_COLOR="#f9fafb"
 PORTAL_ACCENT_COLOR=indigo-700
 ```
 
@@ -127,16 +127,21 @@ PORTAL_ACCENT_COLOR=indigo-700
 
 A colour is either:
 
-- **A hex value** — `#0f172b` or the short form `#eee`.
+- **A hex value** — `"#0f172b"`, the short form `"#eee"`, or written without the hash: `0f172b`.
 - **A standard Tailwind colour name** — a family and a shade, such as `slate-900`, `indigo-700` or
   `rose-500`. Shades run `50`, `100`, `200` … `900`, `950`. `black` and `white` also work.
   The families are `slate`, `gray`, `zinc`, `neutral`, `stone`, `red`, `orange`, `amber`, `yellow`,
   `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `purple`,
   `fuchsia`, `pink` and `rose`.
 
+> **Put quotes around a hex value.** In a `.env` file an unquoted `#` starts a comment, so
+> `PORTAL_ACCENT_COLOR=#4338ca` is read as an empty setting and your colour silently does nothing.
+> Write `PORTAL_ACCENT_COLOR="#4338ca"` — or drop the hash and write `PORTAL_ACCENT_COLOR=4338ca`,
+> which cannot be misread. This catches everybody once.
+
 **Anything else is ignored and the default is used.** A typo will not break the page and will not
 show your text on screen — but it will also not tell you it was wrong, so if a colour does not
-change, check the spelling first.
+change, check the spelling and the quotes first.
 
 ### Two things worth knowing
 
