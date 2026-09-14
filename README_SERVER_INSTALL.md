@@ -146,14 +146,33 @@ An unrecognised name is ignored and you get the light portal.
 scheme's colour, so the same name means something different on each base — which is the point of
 it being a separate setting rather than another theme name.
 
-| Name | Over `light` | Over `dark` |
-|---|---|---|
-| `blue` | A pale blue page with white cards and a deep blue bar. The most conservative of the three. | A deep blue portal throughout, with a brighter blue for actions. |
-| `green` | A pale green page with white cards and a deep green bar. Reads as calm and financial. | A deep green portal — the darkest-feeling of the three. |
-| `purple` | A pale violet page with white cards and a deep purple bar. The most distinctive. | A deep purple portal, still with plenty of contrast on text. |
+The seven are the rainbow, in order:
 
-An unrecognised name leaves the base untinted. A scheme needs no base named — on its own it is the
-light version.
+| Name | What it suits |
+|---|---|
+| `red` | Bold and urgent. See the warning below before choosing it. |
+| `orange` | Warm and approachable without being loud. |
+| `yellow` | Bright and optimistic. Rendered in a golden amber — see below. |
+| `green` | Calm, and the most conventional choice for anything financial. |
+| `blue` | The most conservative. Closest to the portal as it ships. |
+| `indigo` | Deep blue-violet. The "true" purple of the rainbow. |
+| `violet` | The most distinctive of the seven, and the furthest from a default. |
+
+Over **light** each gives a pale tinted page with white cards and a deep bar of the same hue.
+Over **dark** each gives a deep portal throughout in that hue, with a brighter shade for actions.
+An unrecognised name leaves the base untinted, and a scheme needs no base named — on its own it
+is the light version.
+
+> **Two of these are not the literal colour, on purpose.**
+> **`yellow`** renders in a golden amber. A true screen yellow is close to unreadable as a button
+> colour and unpleasant as a page, so you get the colour you meant rather than the one you named.
+> **`indigo` and `violet`** are neighbours and deliberately both offered: indigo is the deeper,
+> bluer one, violet the brighter, pinker one. If in doubt, look at both.
+
+> **A warning about `red`.** The portal uses red for things that have gone wrong — a failed
+> sign-in, a validation error, a failure toast. A red scheme puts your brand in the same colour as
+> your error messages, and a client cannot then tell one from the other at a glance. If you choose
+> it, sign in with a wrong password first and decide whether you are happy with what you see.
 
 ### How the three layers stack
 

@@ -242,13 +242,43 @@ class PortalThemeTest extends TestCase
     // did. These are the surfaces that make it a design rather than a tinted button.
     public function test_a_scheme_reaches_the_surfaces_and_not_only_the_accent()
     {
-        $this->colorScheme('purple');
+        $this->colorScheme('indigo');
 
         $response = $this->get('/login');
 
-        $response->assertSee('--portal-surface-muted:var(--color-purple-100);', false);
-        $response->assertSee('--portal-border:var(--color-purple-200);', false);
-        $response->assertSee('--portal-badge:var(--color-purple-700);', false);
+        $response->assertSee('--portal-surface-muted:var(--color-indigo-100);', false);
+        $response->assertSee('--portal-border:var(--color-indigo-200);', false);
+        $response->assertSee('--portal-badge:var(--color-indigo-700);', false);
+    }
+
+    // The name an operator writes and the palette it draws from are deliberately separate. A true
+    // yellow is illegible as a button colour and unpleasant as a page, so yellow draws from amber
+    // — the operator gets the colour they meant rather than the one they named, without having to
+    // know that amber is what they wanted.
+    public function test_yellow_draws_from_amber_rather_than_from_yellow()
+    {
+        $this->colorScheme('yellow');
+
+        $response = $this->get('/login');
+
+        $response->assertSee('--portal-page:var(--color-amber-50);', false);
+        $response->assertSee('--portal-accent:var(--color-amber-700);', false);
+        $response->assertDontSee('--color-yellow-', false);
+    }
+
+    // Every name in the documentation has to resolve to a scheme, in both directions: a rainbow
+    // with a hole in it is worse than a shorter list, and a scheme nobody documented is one an
+    // operator will never find.
+    public function test_every_documented_scheme_renders()
+    {
+        foreach (['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'] as $scheme) {
+            $this->colorScheme($scheme);
+
+            $response = $this->get('/login');
+
+            $response->assertStatus(200);
+            $response->assertSee('--portal-accent:', false);
+        }
     }
 
     // The stack, top to bottom, in one assertion: a dark base tinted blue, with the operator's own

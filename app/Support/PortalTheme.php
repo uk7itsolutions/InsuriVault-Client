@@ -51,9 +51,13 @@ class PortalTheme
 
     private const SCHEMES = [
 
-        'blue' => ['family' => 'blue', 'light' => '700', 'dark' => '400'],
+        'red' => ['family' => 'red', 'light' => '700', 'dark' => '400'],
+        'orange' => ['family' => 'orange', 'light' => '700', 'dark' => '400'],
+        'yellow' => ['family' => 'amber', 'light' => '700', 'dark' => '300'],
         'green' => ['family' => 'emerald', 'light' => '700', 'dark' => '400'],
-        'purple' => ['family' => 'purple', 'light' => '700', 'dark' => '400'],
+        'blue' => ['family' => 'blue', 'light' => '700', 'dark' => '400'],
+        'indigo' => ['family' => 'indigo', 'light' => '700', 'dark' => '400'],
+        'violet' => ['family' => 'violet', 'light' => '700', 'dark' => '400'],
 
     ];
 
@@ -119,6 +123,10 @@ class PortalTheme
      * take the scheme's hue, so green over light is a pale green page and green over dark is a
      * deep one. The shades are chosen per base for that reason — a tint that reads over white is
      * not the one that reads over near-black.
+     *
+     * A scheme's name and the palette it draws from are separate on purpose. An operator asks for
+     * yellow; a true yellow is illegible as a button colour and unpleasant as a page, so yellow
+     * draws from amber. They get the colour they meant rather than the one they named.
      */
     private static function schemeProperties($base)
     {
