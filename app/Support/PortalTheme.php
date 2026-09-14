@@ -115,7 +115,14 @@ class PortalTheme
             ],
         ],
         'green' => ['family' => 'emerald', 'light' => '700', 'dark' => '400'],
-        'blue' => ['family' => 'blue', 'light' => '700', 'dark' => '400'],
+        'blue' => [
+            'family' => 'blue',
+            'light' => '600',
+            'dark' => '400',
+            'shades' => [
+                'light' => ['nav-surface' => '800'],
+            ],
+        ],
         'indigo' => ['family' => 'indigo', 'light' => '700', 'dark' => '400'],
         'violet' => ['family' => 'violet', 'light' => '700', 'dark' => '400'],
 
@@ -218,9 +225,12 @@ class PortalTheme
      * accents only: a dark portal saturated throughout stops being a background and starts being
      * the subject, and at the darkest shades the hues are hard to tell apart anyway.
      *
-     * A scheme may still depart from the rule for its own hue, and red does: on light it is
-     * desaturated towards grey rather than merely lightened, because a bright red competes with
-     * the rose the portal says "wrong" in.
+     * A scheme may still depart from the rule for its own hue, and three do. Red is desaturated
+     * towards grey rather than merely lightened, because a bright red competes with the rose the
+     * portal says "wrong" in. Orange comes from the burnt middle of its palette, bright orange
+     * being tiring across a full-width bar. Blue sits a shade brighter than the rule throughout,
+     * because at 900 and 700 it is a navy that reads as a colder indigo — and indigo is the very
+     * next scheme in the list, so two names have to look like two colours.
      */
     private static function schemeProperties($base)
     {
