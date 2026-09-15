@@ -16,7 +16,7 @@
     @foreach($accountsWithFiles as $accountEntry)
         <div class="mb-6 overflow-hidden rounded-lg bg-[var(--portal-surface)] shadow-sm">
             <div class="border-b-[1px] border-[var(--portal-border)] bg-[var(--portal-surface-muted)] px-4 py-3">
-                <h5 class="text-base font-semibold text-[var(--portal-text)]">Account: {{ $accountEntry['account']['name'] }}</h5>
+                <h5 class="text-base font-semibold text-[var(--portal-text)]">{{ $accountEntry['account']['name'] }}</h5>
                 @if(!empty($accountEntry['account']['accountType']))
                     <span class="mt-1 inline-flex rounded-full bg-[var(--portal-badge)] px-2 py-[0.125rem] text-xs font-medium text-[var(--portal-badge-text)]">{{ $accountEntry['account']['accountType'] }}</span>
                 @endif
