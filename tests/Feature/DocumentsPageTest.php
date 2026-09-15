@@ -67,16 +67,29 @@ class DocumentsPageTest extends TestCase
         $response->assertSee(self::CLIENT_EMAIL, false);
     }
 
-    // The heading still has to carry what distinguishes one account from another, so the removal did
-    // not take the account's own name or its type badge with it.
+    // The heading still has to carry what distinguishes one account from another, so neither removal
+    // took the account's own name or its type badge with it. Asserting the name as the heading's whole
+    // content rather than as a bare string keeps this honest: "Acme" appears elsewhere in the markup,
+    // so a looser assertion would pass with the heading emptied.
     public function test_the_account_heading_still_names_the_account_and_its_type()
     {
         $response = $this->signedInWithAccounts()->get(route('documents.index'));
 
         $response->assertOk();
-        $response->assertSee('Account: Acme', false);
-        $response->assertSee('Account: Beta', false);
+        $response->assertSee('>Acme</h5>', false);
+        $response->assertSee('>Beta</h5>', false);
         $response->assertSee('TaxForms', false);
         $response->assertSee('Insurance', false);
+    }
+
+    // "Account:" was fixed text on every heading, distinguishing nothing — the card beneath it is that
+    // account's file table and its type badge sits directly below. It is the only place in the views
+    // that used the string, which is what makes asserting its absence outright a fair test.
+    public function test_the_account_heading_carries_no_fixed_label()
+    {
+        $response = $this->signedInWithAccounts()->get(route('documents.index'));
+
+        $response->assertOk();
+        $response->assertDontSee('Account:', false);
     }
 }
