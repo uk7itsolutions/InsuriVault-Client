@@ -4,7 +4,11 @@
 <h2 class="text-3xl font-semibold text-[var(--portal-text)]">Your Documents</h2>
 <hr class="my-4 border-[var(--portal-border)]">
 
-@if(empty($accountsWithFiles))
+@if(!empty($serviceError ?? null))
+    <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        {{ $serviceError }}
+    </div>
+@elseif(empty($accountsWithFiles))
     <div class="rounded-md border-[1px] border-[var(--portal-accent-border)] bg-[var(--portal-accent-surface)] px-4 py-3 text-sm text-[var(--portal-accent-text)]">
         No documents found.
     </div>
