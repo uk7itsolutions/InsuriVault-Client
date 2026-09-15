@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\AuthenticationServiceException;
+use App\Exceptions\DocumentServiceException;
 use App\Exceptions\HostNotActiveException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -247,6 +248,12 @@ class InsuriVaultApiService
         return null;
     }
 
+    /**
+     * Returns the caller's accounts and their files, or null when the API refused the token and the
+     * session is genuinely over. A service that faulted or could not be reached throws
+     * DocumentServiceException instead: the token is still good, so signing the client out would
+     * destroy a working session over a problem on the other end.
+     */
     public function listFiles($token, $accountId = null, $year = null)
     {
         if (config('app.debug')) {
@@ -261,9 +268,21 @@ class InsuriVaultApiService
             $payload['year'] = (int)$year;
         }
 
-        $response = $this->http()->withToken($token)
-            ->withBody(json_encode((object)$payload), 'application/json')
-            ->post("{$this->baseUrl}/AccountFileStorage/List");
+        $url = "{$this->baseUrl}/AccountFileStorage/List";
+
+        try {
+            $response = $this->http()->withToken($token)
+                ->withBody(json_encode((object)$payload), 'application/json')
+                ->post($url);
+        } catch (ConnectionException $exception) {
+            Log::error('InsuriVault API ListFiles Failed', [
+                'url' => $url,
+                'status' => null,
+                'body' => $exception->getMessage(),
+            ]);
+
+            throw new DocumentServiceException($exception->getMessage(), 0, $exception);
+        }
 
         if ($response->successful()) {
             if (config('app.debug')) {
@@ -273,11 +292,16 @@ class InsuriVaultApiService
         }
 
         Log::error('InsuriVault API ListFiles Failed', [
+            'url' => $url,
             'status' => $response->status(),
             'body' => $response->body(),
         ]);
 
-        return null;
+        if ($response->status() === 401) {
+            return null;
+        }
+
+        throw new DocumentServiceException($response->body());
     }
 
     public function downloadFile($token, $accountId, $fileId, $format = 1)

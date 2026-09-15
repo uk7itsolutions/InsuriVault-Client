@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\DocumentServiceException;
 use App\Services\InsuriVaultApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class DocumentController extends Controller
 {
+    private const SERVICE_UNAVAILABLE_MESSAGE =
+        'Your documents could not be loaded because the service could not be reached. You are still signed in — try again shortly, and contact your administrator if it continues.';
+
     protected $apiService;
 
     public function __construct(InsuriVaultApiService $apiService)
@@ -21,11 +25,19 @@ class DocumentController extends Controller
             \Illuminate\Support\Facades\Log::debug('DocumentController index called');
         }
         $token = Session::get('api_token');
-        $accountsWithFiles = $this->apiService->listFiles($token);
+
+        try {
+            $accountsWithFiles = $this->apiService->listFiles($token);
+        } catch (DocumentServiceException $exception) {
+            return view('documents.index', [
+                'accountsWithFiles' => null,
+                'serviceError' => self::SERVICE_UNAVAILABLE_MESSAGE,
+            ]);
+        }
 
         if ($accountsWithFiles === null) {
             if (config('app.debug')) {
-                \Illuminate\Support\Facades\Log::debug('DocumentController index: listFiles failed, redirecting to logout');
+                \Illuminate\Support\Facades\Log::debug('DocumentController index: listFiles refused the token, redirecting to logout');
             }
             return redirect()->route('logout');
         }
@@ -47,7 +59,19 @@ class DocumentController extends Controller
         }
 
         // We also need the original file info to know the content type
-        $accountsWithFiles = $this->apiService->listFiles($token);
+        try {
+            $accountsWithFiles = $this->apiService->listFiles($token);
+        } catch (DocumentServiceException $exception) {
+            return view('documents.index', [
+                'accountsWithFiles' => null,
+                'serviceError' => self::SERVICE_UNAVAILABLE_MESSAGE,
+            ]);
+        }
+
+        if ($accountsWithFiles === null) {
+            return redirect()->route('logout');
+        }
+
         $fileInfo = null;
         foreach ($accountsWithFiles as $account) {
             if ($account['account']['id'] == $accountId) {

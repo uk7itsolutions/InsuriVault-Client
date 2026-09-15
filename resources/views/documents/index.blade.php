@@ -4,7 +4,11 @@
 <h2 class="text-3xl font-semibold text-[var(--portal-text)]">Your Documents</h2>
 <hr class="my-4 border-[var(--portal-border)]">
 
-@if(empty($accountsWithFiles))
+@if(!empty($serviceError ?? null))
+    <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        {{ $serviceError }}
+    </div>
+@elseif(empty($accountsWithFiles))
     <div class="rounded-md border-[1px] border-[var(--portal-accent-border)] bg-[var(--portal-accent-surface)] px-4 py-3 text-sm text-[var(--portal-accent-text)]">
         No documents found.
     </div>
@@ -12,7 +16,7 @@
     @foreach($accountsWithFiles as $accountEntry)
         <div class="mb-6 overflow-hidden rounded-lg bg-[var(--portal-surface)] shadow-sm">
             <div class="border-b-[1px] border-[var(--portal-border)] bg-[var(--portal-surface-muted)] px-4 py-3">
-                <h5 class="text-base font-semibold text-[var(--portal-text)]">Account: {{ $accountEntry['account']['name'] }} ({{ Session::get('user_email') }})</h5>
+                <h5 class="text-base font-semibold text-[var(--portal-text)]">Account: {{ $accountEntry['account']['name'] }}</h5>
                 @if(!empty($accountEntry['account']['accountType']))
                     <span class="mt-1 inline-flex rounded-full bg-[var(--portal-badge)] px-2 py-[0.125rem] text-xs font-medium text-[var(--portal-badge-text)]">{{ $accountEntry['account']['accountType'] }}</span>
                 @endif
