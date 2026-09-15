@@ -208,6 +208,7 @@ class InsuriVaultIntegrationTest extends TestCase
                     'account' => [
                         'id' => 1,
                         'name' => 'John Doe',
+                        'accountType' => 'Insurance',
                         'isActive' => true,
                         'isDisabled' => false,
                         'creationDate' => '2025-12-13T08:05:40',
@@ -217,7 +218,7 @@ class InsuriVaultIntegrationTest extends TestCase
                         [
                             'fileId' => 'file-123',
                             'originalFileName' => 'test.pdf',
-                            'fileCategory' => 'Statement',
+                            'accountType' => 'Insurance',
                             'year' => 2025,
                             'month' => 1,
                             'contentType' => 'application/pdf',
@@ -237,6 +238,10 @@ class InsuriVaultIntegrationTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('John Doe');
         $response->assertSee('test.pdf');
+        // The type belongs to the account, so it is rendered once on the account heading. Asserting
+        // it here is what would catch the portal reading a field the API no longer returns.
+        $response->assertSee('Insurance');
+        $response->assertDontSee('Category');
     }
 
     public function test_document_view()
@@ -251,6 +256,7 @@ class InsuriVaultIntegrationTest extends TestCase
                     'account' => [
                         'id' => $accountId,
                         'name' => 'John Doe',
+                        'accountType' => 'Insurance',
                         'isActive' => true,
                         'isDisabled' => false,
                         'creationDate' => '2025-12-13T08:05:40',
@@ -260,7 +266,7 @@ class InsuriVaultIntegrationTest extends TestCase
                         [
                             'fileId' => $fileId,
                             'originalFileName' => 'test.pdf',
-                            'fileCategory' => 'Statement',
+                            'accountType' => 'Insurance',
                             'year' => 2025,
                             'month' => 1,
                             'contentType' => 'application/pdf',
@@ -327,6 +333,7 @@ class InsuriVaultIntegrationTest extends TestCase
                     'account' => [
                         'id' => 1,
                         'name' => 'John Doe',
+                        'accountType' => 'Insurance',
                         'isActive' => true,
                         'isDisabled' => false,
                         'creationDate' => '2025-12-13T08:05:40',
@@ -336,7 +343,7 @@ class InsuriVaultIntegrationTest extends TestCase
                         [
                             'fileId' => 'file-123',
                             'originalFileName' => 'test.pdf',
-                            'fileCategory' => 'Statement',
+                            'accountType' => 'Insurance',
                             'year' => 2025,
                             'month' => 1,
                             'contentType' => 'application/pdf',
